@@ -1,5 +1,6 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
+require_once($_SERVER['DOCUMENT_ROOT']."/rus/private/currtest2/db.php");
 $APPLICATION->SetTitle("Курсы валют");
 ?> 
 <style>
@@ -17,7 +18,7 @@ $APPLICATION->SetTitle("Курсы валют");
     padding-left: 38px !important;
     padding-right: 30px !important;
     width: 100%;
-    height: 900px;
+    height: auto;
 }
 .right-column {
     width: 670px !important;
@@ -26,7 +27,32 @@ $APPLICATION->SetTitle("Курсы валют");
 }
 .map-Yandex-Size {
     width: 90%;
+    height: 0px;
+    margin-bottom: 20px;
+}
+.map-Yandex-Exact-Size {
+    width: 100%;
     height: 525px;
+}
+.map-Yandex-Exact-dsp {
+    display: none;
+}
+.map-visibility {
+    animation: map-animate 0.25s ease-in-out forwards;
+}
+@keyframes map-animate {
+    0% {
+        height: 0px;
+    }
+    100% {
+        height: 525px;
+    }
+} 
+
+.currency-list-block {
+    width: 90%;
+    height: 400px;
+    border: 0.2px solid gray;
 }
 .p-kursy {
     margin-bottom: 20px !important;
@@ -124,22 +150,36 @@ option:hover,  .active{
     border-radius: 6px;
     background-color: rgb(255, 255, 255);
     font-size: 12px;
-    height: 25px;
+    height: 22px;
     width: 165px;
+    transform: translateY(45%);
 }
 .controller-item-last {
     justify-content: flex-end !important;
-    align-items: flex-start;
+    align-items: flex-end;
 }
 .change-option {
     display: flex;
     position: relative;
     align-items: center;
     justify-content: center;
-    width: 48%;
+    width: 50%;
     height: 100%;
     font-size: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    -webkit-user-select: none; 
+    -ms-user-select: none; 
+    user-select: none; 
 } 
+.change-option-active {
+    border-radius: 6px;
+    background-image: -moz-linear-gradient( 90deg, rgb(231,105,0) 0%, rgb(240,160,0) 100%);
+    background-image: -webkit-linear-gradient( 90deg, rgb(231,105,0) 0%, rgb(240,160,0) 100%);
+    background-image: -ms-linear-gradient( 90deg, rgb(231,105,0) 0%, rgb(240,160,0) 100%);
+    box-shadow: inset 0px 2px 3px 0px rgba(244, 187, 0, 0.004);
+    color: #ffffff;
+}
 </style>
 <script src="https://api-maps.yandex.ru/2.1/?apikey=a0a0b5ec-c142-4ea8-b8e6-ae69a5859bef&lang=ru_RU&load=package.full"></script>
 <div class="rectangle_1">
@@ -176,79 +216,99 @@ option:hover,  .active{
         </div>
         <div class="controller-item controller-item-last">
             <div class="change-map">
-                <div class="change-option">Списком</div>
+                <div class="change-option change-option-active">Списком</div>
                 <div class="change-option">На карте</div>
             </div>
         </div>
     </div>
-    <div id="map" class="map-Yandex-Size"></div>
+    <div id="map-wrap" class="map-Yandex-Size">
+        <div id="map" class="map-Yandex-Exact-Size map-Yandex-Exact-dsp"></div>
+    </div>
+    <div class='currency-list-block'></div>
 </div>
 
 <script type="text/javascript">
-$(document).ready(function () {
-    ymaps.ready(init);
-    function init() {
-        var myMap = new ymaps.Map("map", { 
-                                    center: [55.741206, 37.614267], 
-                                    zoom: 12 
-                    });
-                    //           myMap.controls.add("zoomControl").add("typeSelector");
-                    //var myPlacemark = new ymaps.Placemark([55.741206, 37.614267], {
-                    //	});
-    }
-
-    let fieldLink = document.querySelectorAll(".db");
-    let dataLink = document.querySelectorAll(".db-datalist");
-    let dataAllLinks = [];
-    dataLink.forEach((el, index) => {
-        dataAllLinks.push(Array.from(el.options, (option) => option.value));
-    });
-
-    fieldLink.forEach((el, index) => {
-        el.onfocus = function () {
-            dataLink[index].style.display = 'block';
-            el.style.borderRadius = "5px 5px 0 0";  
-        };
-
-        for (let option of dataLink[index].options) {
-            option.onmousedown = function () {
-                event.preventDefault();
-            }
-            option.onclick = function () {
-                el.value = option.value;
-                dataLink[index].style.display = 'none';
-                el.style.borderRadius = "5px";
-                let anotherInput = index & 1 == 1 ? index - 1 : index + 1;
-                console.log("Check tab - ", fieldLink.length, index, anotherInput);
-                let valueForNotherInput = dataAllLinks[anotherInput][dataAllLinks[index].indexOf(option.value)];
-                fieldLink[anotherInput].value = valueForNotherInput;
-                console.log("Hello - ", dataAllLinks[index].indexOf(option.value));
-                el.blur();
-            }
+    $(document).ready(function () {
+        ymaps.ready(init);
+        function init() {
+            var myMap = new ymaps.Map("map", { 
+                                        center: [55.741206, 37.614267], 
+                                        zoom: 12 
+                        });
+                        //           myMap.controls.add("zoomControl").add("typeSelector");
+                        //var myPlacemark = new ymaps.Placemark([55.741206, 37.614267], {
+                        //	});
         }
 
-        el.oninput = function() {
-            let currentFocus = -1;
-            let text = el.value.toUpperCase();
-            for (let option of dataLink[index].options) {
-                if(option.value.toUpperCase().indexOf(text) > -1) {
-                    option.style.display = "block";
-                } else {
-                    option.style.display = "none";
-                }
+        let fieldLink = document.querySelectorAll(".db");
+        let dataLink = document.querySelectorAll(".db-datalist");
+        let dataAllLinks = [];
+        dataLink.forEach((el, index) => {
+            dataAllLinks.push(Array.from(el.options, (option) => option.value));
+        });
+
+        fieldLink.forEach((el, index) => {
+            el.onfocus = function () {
+                dataLink[index].style.display = 'block';
+                el.style.borderRadius = "5px 5px 0 0";  
             };
-        }
 
+            for (let option of dataLink[index].options) {
+                option.onmousedown = function () {
+                    event.preventDefault();
+                }
+                option.onclick = function () {
+                    el.value = option.value;
+                    dataLink[index].style.display = 'none';
+                    el.style.borderRadius = "5px";
+                    let anotherInput = index & 1 == 1 ? index - 1 : index + 1;
+                    console.log("Check tab - ", fieldLink.length, index, anotherInput);
+                    let valueForNotherInput = dataAllLinks[anotherInput][dataAllLinks[index].indexOf(option.value)];
+                    fieldLink[anotherInput].value = valueForNotherInput;
+                    console.log("Hello - ", dataAllLinks[index].indexOf(option.value));
+                    el.blur();
+                }
+            }
+
+            el.oninput = function() {
+                let currentFocus = -1;
+                let text = el.value.toUpperCase();
+                for (let option of dataLink[index].options) {
+                    if(option.value.toUpperCase().indexOf(text) > -1) {
+                        option.style.display = "block";
+                    } else {
+                        option.style.display = "none";
+                    }
+                };
+            }
+
+        });
+
+        fieldLink.forEach((el, index) => {
+            el.onblur = function (event) {
+                dataLink[index].style.display = 'none';
+                el.style.borderRadius = "0px";  
+
+            };
+        });
     });
-
-    fieldLink.forEach((el, index) => {
-        el.onblur = function (event) {
-            dataLink[index].style.display = 'none';
-            el.style.borderRadius = "0px";  
-
-        };
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        let allPhotosField = document.querySelectorAll('.change-option');
+        let mapWrap = document.getElementById("map-wrap");
+        let mapElem = document.getElementById("map");
+        
+        allPhotosField.forEach((el, index) => {
+            el.onclick = () => {
+                allPhotosField.forEach((ht, ind) => {
+                    ht.classList.toggle("change-option-active");
+                });
+                mapWrap.classList.toggle("map-visibility");
+                mapElem.classList.toggle("map-Yandex-Exact-dsp");
+            }
+        });
     });
-});
 </script>
 
 
