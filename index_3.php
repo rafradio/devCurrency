@@ -1,6 +1,5 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
-require_once($_SERVER['DOCUMENT_ROOT']."/rus/private/currtest2/db.php");
 $APPLICATION->SetTitle("Курсы валют");
 ?> 
 <style>
@@ -229,8 +228,52 @@ option:hover,  .active{
 
 <script type="text/javascript">
     $(document).ready(function () {
+        const requestToApi = async () => {
+//            let url = new URL("./rus/private/currtest2/db.php");
+            let url = "./db.php";
+            let dataToSend = {'data': "hello world"};
+            const request = new Request(url, {
+                                method: "POST",
+                                headers: {
+                                            'Content-Type': 'application/json;charset=utf-8',
+                                        },
+                                body: JSON.stringify(dataToSend)
+                                });
+            try {
+                const response = await fetch(request);  
+                if (!response.ok) {
+                    throw new Error(`Response status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.log("from api result = ", data);
+                return data.file_name;
+            }
+            catch(error) {
+                console.log(error.message);
+            }
+            console.log("hello yandex");
+        } 
+        
         ymaps.ready(init);
         function init() {
+            var geolocation = ymaps.geolocation;
+            
+            geolocation.get({
+                provider: 'yandex',
+                mapStateAutoApply: false,
+            }).then(function(result) {
+                // result.geoObjects.options.set('preset', 'islands#redCircleIcon');
+                result.geoObjects.options.set('iconImageHref', '/img/icons/pin-1.png');
+				result.geoObjects.options.set('iconImageSize', [40, 48]);
+                result.geoObjects.get(0).properties.set({
+                    balloonContentBody: 'Мое местоположение'
+                });
+                myMap.geoObjects.add(result.geoObjects);
+                console.log(result.geoObjects.position);
+                requestToApi();
+            });
+
+            
             var myMap = new ymaps.Map("map", { 
                                         center: [55.741206, 37.614267], 
                                         zoom: 12 
@@ -309,6 +352,8 @@ option:hover,  .active{
             }
         });
     });
+</script>
+<script type="text/javascript">
 </script>
 
 
