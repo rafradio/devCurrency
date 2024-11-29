@@ -26,18 +26,25 @@ $APPLICATION->SetTitle("Курсы валют");
 }
 .map-Yandex-Size {
     width: 90%;
-    height: 0px;
+    height: 525px;
     margin-bottom: 20px;
+    z-index: 10;
 }
 .map-Yandex-Exact-Size {
+    z-index: 10;
     width: 100%;
     height: 525px;
 }
 .map-Yandex-Exact-dsp {
     display: none;
 }
+.map-visibility-1 {
+    display: none;
+}
 .map-visibility {
-    animation: map-animate 0.25s ease-in-out forwards;
+    animation: map-animate 0.25s forwards;
+    animation-timing-function: ease-in-out;
+    -webkit-animation-timing-function: ease-in-out;
 }
 @keyframes map-animate {
     0% {
@@ -48,11 +55,7 @@ $APPLICATION->SetTitle("Курсы валют");
     }
 } 
 
-.currency-list-block {
-    width: 90%;
-    height: 400px;
-    border: 0.2px solid gray;
-}
+
 .p-kursy {
     margin-bottom: 20px !important;
 }
@@ -179,6 +182,37 @@ option:hover,  .active{
     box-shadow: inset 0px 2px 3px 0px rgba(244, 187, 0, 0.004);
     color: #ffffff;
 }
+.currency-list-block {
+    width: 90%;
+    height: auto;
+    border: 0.2px solid gray;
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: left;
+}
+.currency-element {
+    display: flex;
+    position: relative;
+    width: 70%;
+    height: 25px;
+    border: 0.2px solid gray;  
+    flex-direction: row;
+}
+.first-currency-none {
+    display: none;
+}
+.first-currency-show {
+    display: flex;
+}
+.currency-element-block {
+    display: flex;
+    position: relative;
+    width: 33.3%;
+    height: 100%;
+    border: 0.2px solid gray; 
+}
 </style>
 <script src="https://api-maps.yandex.ru/2.1/?apikey=a0a0b5ec-c142-4ea8-b8e6-ae69a5859bef&lang=ru_RU&load=package.full"></script>
 <div class="rectangle_1">
@@ -220,17 +254,44 @@ option:hover,  .active{
             </div>
         </div>
     </div>
-    <div id="map-wrap" class="map-Yandex-Size">
+    <div id="map-wrap" class="map-Yandex-Size map-visibility-1">
         <div id="map" class="map-Yandex-Exact-Size map-Yandex-Exact-dsp"></div>
     </div>
-    <div class='currency-list-block'></div>
+    <div class='currency-list-block'>
+        <div class='currency-element first-currency-show'>
+            <div class="currency-element-block"></div>
+            <div class="currency-element-block">Покупка</div>
+            <div class="currency-element-block">Продажа</div>
+        </div>
+        <div id="example-curr" class='currency-element first-currency-none'>
+            <div class="currency-element-block"></div>
+            <div class="currency-element-block"></div>
+            <div class="currency-element-block"></div>
+        </div>
+    </div>
 </div>
 
 <script type="text/javascript">
     $(document).ready(function () {
-        const requestToApi = async () => {
+        const parseCurrencies = (result) => {
+            let parentCurrency  = document.querySelectorAll('.currency-list-block')[0];
+            let childCurrency = document.getElementById("example-curr");
+            result.forEach((el, ind) => {
+                let clone = childCurrency.cloneNode(true);
+                clone.id = "";
+                clone.classList.remove("first-currency-none");
+                clone.classList.add("first-currency-show");
+                clone.children[0].innerHTML = el.currency_to;
+                clone.children[1].innerHTML = el.sum_buy;
+                clone.children[2].innerHTML = el.sum_sale;
+                parentCurrency.appendChild(clone);
+            });
+        }
+        
+        const requestToApi = async (position) => {
 //            let url = new URL("./rus/private/currtest2/db.php");
-            let url = "./db.php";
+            let checkPosition = [parseFloat(position[0]), parseFloat(position[1])]; 
+            let url = "./apidb.php";
             let dataToSend = {'data': "hello world"};
             const request = new Request(url, {
                                 method: "POST",
@@ -245,8 +306,17 @@ option:hover,  .active{
                     throw new Error(`Response status: ${response.status}`);
                 }
                 const data = await response.json();
-                console.log("from api result = ", data);
-                return data.file_name;
+                let closestOffice = data.data.reduce(function(prev, curr) {
+                    let data1 = Math.sqrt( Math.pow((parseFloat(prev.latitude) - checkPosition[0]) ,2) + Math.pow((parseFloat(prev.longitude) - checkPosition[1]),2) );
+                    let data2 = Math.sqrt( Math.pow((parseFloat(curr.latitude) - checkPosition[0]),2) + Math.pow((parseFloat(curr.longitude) - checkPosition[0]),2) );
+                   
+                    return (Math.abs(data2) < Math.abs(data1) ? curr : prev);
+                });
+                console.log("from api result = ", checkPosition);
+                console.log("from api result = ", closestOffice);
+                let result = data.data.filter(x => x.office_id == closestOffice.office_id);
+                console.log("from api result = ", result);
+                parseCurrencies(result);
             }
             catch(error) {
                 console.log(error.message);
@@ -270,7 +340,7 @@ option:hover,  .active{
                 });
                 myMap.geoObjects.add(result.geoObjects);
                 console.log(result.geoObjects.position);
-                requestToApi();
+                requestToApi(result.geoObjects.position);
             });
 
             
@@ -347,7 +417,7 @@ option:hover,  .active{
                 allPhotosField.forEach((ht, ind) => {
                     ht.classList.toggle("change-option-active");
                 });
-                mapWrap.classList.toggle("map-visibility");
+                mapWrap.classList.toggle("map-visibility-1");
                 mapElem.classList.toggle("map-Yandex-Exact-dsp");
             }
         });
