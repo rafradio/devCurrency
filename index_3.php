@@ -367,14 +367,29 @@ option:hover,  .active{
         CurrensyData.prototype.changeCitiesOffices = function(closestOffice) {
             let currentOfficesInTheCity = this.dataFromApi.filter(x => x.city == closestOffice.city);
             let listOfCities = [...new Set(Array.from(this.dataFromApi, x => x.city))];
-            console.log("Кол-во офисов в горое = ", listOfCities.length, listOfCities[20]);
-            let citiesFieldLink = document.querySelectorAll(".db")[0];
-            let citiesDataLink = document.querySelectorAll(".db-datalist")[0];
-            let options = citiesDataLink.children;
-            var i, L = citiesDataLink.options.length - 1;
-            for(i = L; i >= 0; i--) {
-               citiesDataLink.remove(i);
+            let listOfOffices = [...new Set(Array.from(this.dataFromApi, x => x.label))];
+            console.log("Кол-во офисов в горое = ", listOfCities.length, listOfCities[1]);
+            
+            const change = (id, dataList) => {
+                let citiesFieldLink = document.querySelectorAll(".db")[id];
+                let citiesDataLink = document.querySelectorAll(".db-datalist")[id];
+
+                let options = citiesDataLink.children;
+                var i, L = options.length - 1;
+                for(i = L; i >= 0; i--) {
+                   options[i].remove();
+                }
+                dataList.forEach((el, ind) => {
+                    let option = document.createElement('option');
+                    option.value = el;
+                    option.text = el;
+                    citiesDataLink.appendChild(option);
+                });
             }
+            change(0, listOfCities);
+            change(1, listOfOffices);
+            
+            this.initSettings();
         }
         
     
