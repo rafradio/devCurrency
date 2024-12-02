@@ -277,6 +277,7 @@ option:hover,  .active{
             ymaps.ready(init);
             let self = this;
             this.dataFromApi = [];
+            this.dictCityOffices = new Map();
             
             function init() {
                 var geolocation = ymaps.geolocation;
@@ -306,7 +307,7 @@ option:hover,  .active{
                             //	});
             }
             
-            this.initSettings();
+            this.initSettings("init");
     }
     
     CurrensyData.prototype.parseCurrencies = function(result) {
@@ -367,8 +368,42 @@ option:hover,  .active{
         CurrensyData.prototype.changeCitiesOffices = function(closestOffice) {
             let currentOfficesInTheCity = this.dataFromApi.filter(x => x.city == closestOffice.city);
             let listOfCities = [...new Set(Array.from(this.dataFromApi, x => x.city))];
+            listOfCities = listOfCities.filter(x => x != null);
             let listOfOffices = [...new Set(Array.from(this.dataFromApi, x => x.label))];
-            console.log("Кол-во офисов в горое = ", listOfCities.length, listOfCities[1]);
+            
+            this.dataFromApi.forEach((elm, ind) => {
+                if (elm.city != null) {
+                if (!(this.dictCityOffices.has(elm.city))) {
+                    
+                    let arr = [];
+//                    arr.push(elm.label);
+//                    arr.push(elm.office_id);
+                    arr.push([elm.label, elm.office_id]);
+                    this.dictCityOffices.set(elm.city, arr);
+                    if (elm.city == 'Владивосток') console.log("Владивосток", this.dictCityOffices.get('Владивосток'));
+                } else {
+                    
+                    let arr = this.dictCityOffices.get(elm.city);
+                    if (elm.city == 'Владивосток') console.log("Владивосток", arr);
+                    let arr1 = [];
+                    arr.forEach((elm, ind) => {
+                        arr1.push(elm[1]);
+                    });
+//                    //let arr1 = arr.length > 1 ? Array.from(arr, x => x[1]): arr[1];
+//                    
+//                    
+                    if (!(arr1.includes(elm.office_id))) {
+                        arr.push([elm.label, elm.office_id]);
+                        this.dictCityOffices.set(elm.city, arr);
+                    }
+                    
+                }
+            }
+            });
+//            listOfCities.forEach((elm, ind) => {
+//                let arr = [];
+//            });
+            console.log("Кол-во офисов в горое = ", listOfCities.length, listOfCities[5], this.dictCityOffices.get(listOfCities[5]));
             
             const change = (id, dataList) => {
                 let citiesFieldLink = document.querySelectorAll(".db")[id];
@@ -389,14 +424,32 @@ option:hover,  .active{
             change(0, listOfCities);
             change(1, listOfOffices);
             
-            this.initSettings();
+            this.initSettings("notInit");
         }
         
     
-        CurrensyData.prototype.initSettings = function() {
+        CurrensyData.prototype.initSettings = function(status) {
             let fieldLink = document.querySelectorAll(".db");
             let dataLink = document.querySelectorAll(".db-datalist");
             let dataAllLinks = [];
+            
+            const createListnersCities = (city) => {
+                let citiesDataLink = document.querySelectorAll(".db-datalist")[1];
+                let arr = this.dictCityOffices.get(city);
+                let arr1 = Array.from(arr, x => x[0]);
+                
+                let options = citiesDataLink.children;
+                var i, L = options.length - 1;
+                for(i = L; i >= 0; i--) {
+                   options[i].remove();
+                }
+                arr1.forEach((el, ind) => {
+                    let option = document.createElement('option');
+                    option.value = el;
+                    option.text = el;
+                    citiesDataLink.appendChild(option);
+                });
+            }
             
             dataLink.forEach((el, index) => {
                 dataAllLinks.push(Array.from(el.options, (option) => option.value));
@@ -418,9 +471,12 @@ option:hover,  .active{
                         el.style.borderRadius = "6px";
                         let anotherInput = index & 1 == 1 ? index - 1 : index + 1;
                         console.log("Check tab - ", fieldLink.length, index, anotherInput);
-                        let valueForNotherInput = dataAllLinks[anotherInput][dataAllLinks[index].indexOf(option.value)];
-                        fieldLink[anotherInput].value = valueForNotherInput;
-                        console.log("Hello - ", dataAllLinks[index].indexOf(option.value));
+                        if (status != "init" && index == 0) {
+                            createListnersCities(option.value);
+                        }
+                        //let valueForNotherInput = dataAllLinks[anotherInput][dataAllLinks[index].indexOf(option.value)];
+                        //fieldLink[anotherInput].value = valueForNotherInput;
+                        //console.log("Hello - ", dataAllLinks[index].indexOf(option.value));
                         el.blur();
                     }
                 }
