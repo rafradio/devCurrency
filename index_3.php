@@ -307,8 +307,9 @@ option:hover,  .active{
                             //	});
             }
             
-            this.initSettings("init");
+//            this.initSettings("init");
             this.settingsOnClickCities();
+            this.settingsOnClickOffices();
     }
     
     CurrensyData.prototype.parseCurrencies = function(result) {
@@ -355,8 +356,8 @@ option:hover,  .active{
                 console.log("from api result ближайший офис = ", checkPosition);
                 console.log("список валют = ", closestOffice);
                 let result = this.dataFromApi.filter(x => x.office_id == closestOffice.office_id);
-                console.log("from api result = ", result);
-                console.log("from api result город = ", result);
+                console.log(" валюты  from api result = ", result);
+//                console.log("from api result город = ", result);
                 this.parseCurrencies(result);
                 this.changeCitiesOffices(closestOffice);
             }
@@ -421,7 +422,7 @@ option:hover,  .active{
             change(0, listOfCities);
             change(1, listOfOffices);
             
-            this.initSettings("cities");
+//            this.initSettings("cities");
             this.settingsOnClickCities();
         }
         
@@ -443,7 +444,7 @@ option:hover,  .active{
                     option.dataset.officeid = el[1];
                     citiesDataLink.appendChild(option);
                 });
-//                this.initSettings("offices");
+                this.settingsOnClickOffices();
         }
         
         CurrensyData.prototype.createListnersOffice = function(office, officeID) {
@@ -458,11 +459,70 @@ option:hover,  .active{
                 this.parseCurrencies(result);
         }
         
+        CurrensyData.prototype.settingsOnClickOffices = function() {
+            console.log("Проверяем новую клики офисов");
+            let fieldLink = document.querySelectorAll(".db")[1];
+            let dataLink = document.querySelectorAll(".db-datalist")[1];
+            let self = this;
+            
+            fieldLink.onfocus = function () {
+                    dataLink.style.display = 'block';
+                    fieldLink.style.borderRadius = "6px 6px 0 0";  
+            };
+            
+            for (let option of dataLink.options) {
+                option.onmousedown = function () {
+                        event.preventDefault();
+                    }
+            }
+            
+            for (let option of dataLink.options) {
+                console.log("Проверяем новую клики офисов = ", option);
+                option.onclick = function () {
+                    console.log("Проверяем новую клики офисов = ", option.value);
+                    fieldLink.value = option.value;
+                    dataLink.style.display = 'none';
+                    fieldLink.style.borderRadius = "6px";
+                    self.createListnersOffice(option.value, option.dataset.officeid);
+                    fieldLink.blur();
+                }
+            }
+            fieldLink.oninput = function() {
+                    let currentFocus = -1;
+                    let text = fieldLink.value.toUpperCase();
+                    for (let option of dataLink.options) {
+                        if(option.value.toUpperCase().indexOf(text) > -1) {
+                            option.style.display = "block";
+                        } else {
+                            option.style.display = "none";
+                        }
+                    };
+                }
+                
+                fieldLink.onblur = function (event) {
+                    dataLink.style.display = 'none';
+                    fieldLink.style.borderRadius = "6px 6px 6px 6px";  
+
+                };
+        }
+        
         CurrensyData.prototype.settingsOnClickCities = function() {
             let fieldLink = document.querySelectorAll(".db")[0];
             let dataLink = document.querySelectorAll(".db-datalist")[0];
             let self = this;
             console.log("Проверяем новую клики городов");
+            
+            fieldLink.onfocus = function () {
+                    dataLink.style.display = 'block';
+                    fieldLink.style.borderRadius = "6px 6px 0 0";  
+            };
+            
+            for (let option of dataLink.options) {
+                option.onmousedown = function () {
+                        event.preventDefault();
+                    }
+            }
+            
             let dataAllLinks = [];
             for (let option of dataLink.options) {
                 option.onclick = function () {
@@ -473,49 +533,35 @@ option:hover,  .active{
                     fieldLink.blur();
                 }
             }
-           
-                
             
+            fieldLink.oninput = function() {
+                    let currentFocus = -1;
+                    let text = fieldLink.value.toUpperCase();
+                    for (let option of dataLink.options) {
+                        if(option.value.toUpperCase().indexOf(text) > -1) {
+                            option.style.display = "block";
+                        } else {
+                            option.style.display = "none";
+                        }
+                    };
+                }
+                
+                fieldLink.onblur = function (event) {
+                    dataLink.style.display = 'none';
+                    fieldLink.style.borderRadius = "6px 6px 6px 6px";  
+
+                };
         }
+        
+//        CurrensyData.prototype.initSettings = function(status) {
+//            
+//        }
     
         CurrensyData.prototype.initSettings = function(status) {
             let fieldLink = document.querySelectorAll(".db");
             let dataLink = document.querySelectorAll(".db-datalist");
             let dataAllLinks = [];
             
-//            const createListnersCities = (city) => {
-//                console.log("Проверяем слушатель событий Города");
-//                let citiesDataLink = document.querySelectorAll(".db-datalist")[1];
-//                let arr = this.dictCityOffices.get(city);
-//                let arr1 = Array.from(arr, x => [x[0], x[1]]);
-//                
-//                let options = citiesDataLink.children;
-//                var i, L = options.length - 1;
-//                for(i = L; i >= 0; i--) {
-//                   options[i].remove();
-//                }
-//                arr1.forEach((el, ind) => {
-//                    let option = document.createElement('option');
-//                    option.value = el[0];
-//                    option.text = el[0];
-//                    option.dataset.officeid = el[1];
-//                    citiesDataLink.appendChild(option);
-//                });
-//                this.initSettings("offices");
-//            }
-            
-//            const createListnersOffice = (office, officeID) => {
-//                let currencyBlock = document.querySelectorAll(".first-currency-show");
-//                console.log("from options this = ", officeID );
-//                currencyBlock.forEach((elm, ind) => {
-//                    if (ind != 0) {
-//                        elm.remove();
-//                    }
-//                });
-//                let result = this.dataFromApi.filter(x => x.office_id == officeID);
-//                this.parseCurrencies(result);
-//                
-//            }
             
             dataLink.forEach((el, index) => {
                 dataAllLinks.push(Array.from(el.options, (option) => option.value));
