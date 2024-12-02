@@ -308,6 +308,7 @@ option:hover,  .active{
             }
             
             this.initSettings("init");
+            this.settingsOnClickCities();
     }
     
     CurrensyData.prototype.parseCurrencies = function(result) {
@@ -376,8 +377,6 @@ option:hover,  .active{
                 if (!(this.dictCityOffices.has(elm.city))) {
                     
                     let arr = [];
-//                    arr.push(elm.label);
-//                    arr.push(elm.office_id);
                     arr.push([elm.label, elm.office_id]);
                     this.dictCityOffices.set(elm.city, arr);
                     if (elm.city == 'Владивосток') console.log("Владивосток", this.dictCityOffices.get('Владивосток'));
@@ -389,9 +388,7 @@ option:hover,  .active{
                     arr.forEach((elm, ind) => {
                         arr1.push(elm[1]);
                     });
-//                    //let arr1 = arr.length > 1 ? Array.from(arr, x => x[1]): arr[1];
-//                    
-//                    
+                    
                     if (!(arr1.includes(elm.office_id))) {
                         arr.push([elm.label, elm.office_id]);
                         this.dictCityOffices.set(elm.city, arr);
@@ -424,19 +421,15 @@ option:hover,  .active{
             change(0, listOfCities);
             change(1, listOfOffices);
             
-            this.initSettings("notInit");
+            this.initSettings("cities");
+            this.settingsOnClickCities();
         }
         
-    
-        CurrensyData.prototype.initSettings = function(status) {
-            let fieldLink = document.querySelectorAll(".db");
-            let dataLink = document.querySelectorAll(".db-datalist");
-            let dataAllLinks = [];
-            
-            const createListnersCities = (city) => {
+        CurrensyData.prototype.createListnersCities = function(city) {
+            console.log("Проверяем слушатель событий Города");
                 let citiesDataLink = document.querySelectorAll(".db-datalist")[1];
                 let arr = this.dictCityOffices.get(city);
-                let arr1 = Array.from(arr, x => x[0]);
+                let arr1 = Array.from(arr, x => [x[0], x[1]]);
                 
                 let options = citiesDataLink.children;
                 var i, L = options.length - 1;
@@ -445,11 +438,84 @@ option:hover,  .active{
                 }
                 arr1.forEach((el, ind) => {
                     let option = document.createElement('option');
-                    option.value = el;
-                    option.text = el;
+                    option.value = el[0];
+                    option.text = el[0];
+                    option.dataset.officeid = el[1];
                     citiesDataLink.appendChild(option);
                 });
+//                this.initSettings("offices");
+        }
+        
+        CurrensyData.prototype.createListnersOffice = function(office, officeID) {
+            let currencyBlock = document.querySelectorAll(".first-currency-show");
+                console.log("from options this = ", officeID );
+                currencyBlock.forEach((elm, ind) => {
+                    if (ind != 0) {
+                        elm.remove();
+                    }
+                });
+                let result = this.dataFromApi.filter(x => x.office_id == officeID);
+                this.parseCurrencies(result);
+        }
+        
+        CurrensyData.prototype.settingsOnClickCities = function() {
+            let fieldLink = document.querySelectorAll(".db")[0];
+            let dataLink = document.querySelectorAll(".db-datalist")[0];
+            let self = this;
+            console.log("Проверяем новую клики городов");
+            let dataAllLinks = [];
+            for (let option of dataLink.options) {
+                option.onclick = function () {
+                    fieldLink.value = option.value;
+                    dataLink.style.display = 'none';
+                    fieldLink.style.borderRadius = "6px";
+                    self.createListnersCities(option.value);
+                    fieldLink.blur();
+                }
             }
+           
+                
+            
+        }
+    
+        CurrensyData.prototype.initSettings = function(status) {
+            let fieldLink = document.querySelectorAll(".db");
+            let dataLink = document.querySelectorAll(".db-datalist");
+            let dataAllLinks = [];
+            
+//            const createListnersCities = (city) => {
+//                console.log("Проверяем слушатель событий Города");
+//                let citiesDataLink = document.querySelectorAll(".db-datalist")[1];
+//                let arr = this.dictCityOffices.get(city);
+//                let arr1 = Array.from(arr, x => [x[0], x[1]]);
+//                
+//                let options = citiesDataLink.children;
+//                var i, L = options.length - 1;
+//                for(i = L; i >= 0; i--) {
+//                   options[i].remove();
+//                }
+//                arr1.forEach((el, ind) => {
+//                    let option = document.createElement('option');
+//                    option.value = el[0];
+//                    option.text = el[0];
+//                    option.dataset.officeid = el[1];
+//                    citiesDataLink.appendChild(option);
+//                });
+//                this.initSettings("offices");
+//            }
+            
+//            const createListnersOffice = (office, officeID) => {
+//                let currencyBlock = document.querySelectorAll(".first-currency-show");
+//                console.log("from options this = ", officeID );
+//                currencyBlock.forEach((elm, ind) => {
+//                    if (ind != 0) {
+//                        elm.remove();
+//                    }
+//                });
+//                let result = this.dataFromApi.filter(x => x.office_id == officeID);
+//                this.parseCurrencies(result);
+//                
+//            }
             
             dataLink.forEach((el, index) => {
                 dataAllLinks.push(Array.from(el.options, (option) => option.value));
@@ -465,20 +531,23 @@ option:hover,  .active{
                     option.onmousedown = function () {
                         event.preventDefault();
                     }
-                    option.onclick = function () {
-                        el.value = option.value;
-                        dataLink[index].style.display = 'none';
-                        el.style.borderRadius = "6px";
-                        let anotherInput = index & 1 == 1 ? index - 1 : index + 1;
-                        console.log("Check tab - ", fieldLink.length, index, anotherInput);
-                        if (status != "init" && index == 0) {
-                            createListnersCities(option.value);
-                        }
-                        //let valueForNotherInput = dataAllLinks[anotherInput][dataAllLinks[index].indexOf(option.value)];
-                        //fieldLink[anotherInput].value = valueForNotherInput;
-                        //console.log("Hello - ", dataAllLinks[index].indexOf(option.value));
-                        el.blur();
-                    }
+//                    option.onclick = function () {
+//                        console.log("проверяем клик = ", status);
+//                        el.value = option.value;
+//                        dataLink[index].style.display = 'none';
+//                        el.style.borderRadius = "6px";
+//                        let anotherInput = index & 1 == 1 ? index - 1 : index + 1;
+//                        console.log("Check tab - ", fieldLink.length, index, anotherInput);
+//                        if (status == "init" && index == 0) {
+//                            createListnersCities(option.value);
+//                        }
+//                        if (status == "offices" && index == 1) {
+//                            createListnersOffice(option.value, option.dataset.officeid);
+//                            console.log("check options");
+//                        }
+//
+//                        el.blur();
+//                    }
                 }
 
                 el.oninput = function() {
