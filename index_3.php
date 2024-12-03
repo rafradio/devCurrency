@@ -352,6 +352,60 @@ option:hover,  .active{
         }
     }
     
+    CurrensyData.prototype.ymapsNewDraw = async function(city) {
+//        ymaps.ready(init);
+        let self = this;
+        
+        const fetchUserLocation = async () => {
+            const geolocation = ymaps.geolocation;
+            const res = await ymaps.geocode(city);
+            return res.geoObjects.get(0).geometry._coordinates;
+        }
+        
+        let data = await fetchUserLocation();
+        console.log("Геолокация города = ", data);
+        
+        
+        let cityOffices = this.allDictCityOffices.get(city);
+        const defaultPinImage = '/img/marker.png'; // Стандартное изображение
+        const highlightedPinImage = '/img/icons/pin-1.png'; // Выделенное изображение
+        
+        cityOffices.forEach(item => {
+                let [label, id, latitude, longitude] = item;
+                const coordinates = [latitude, longitude];
+
+                const placemark = new ymaps.Placemark(coordinates, {
+                    id: id,
+                    name: label
+                }, {
+                    iconLayout: 'default#image',
+                    iconImageHref: defaultPinImage,
+                    iconImageSize: [37, 43],
+                    iconImageOffset: [-18, -42],
+                    balloonVisible: false
+                });
+
+                self.myCollection.add(placemark);
+
+            });
+            
+        self.myMap.geoObjects.add(self.myCollection);
+        this.myMap.setCenter(data);
+        
+        async function init() {
+            let data = await fetchUserLocation();
+            console.log("Геолокация города = ", data._coordinates);
+            let dict = self.allDictCityOffices;
+            self.myMap = new ymaps.Map("map", { 
+                                    center: data, 
+                                    zoom: 12,
+                                    controls: ['zoomControl']
+                    });
+                    
+            let cityOffices = dict.get(city);
+        }
+    }
+    
     CurrensyData.prototype.parseCurrencies = function(result) {
 
             let parentCurrency  = document.querySelectorAll('.currency-list-block')[0];
@@ -520,6 +574,7 @@ option:hover,  .active{
 
             document.querySelectorAll(".db")[1].value = "";
             this.settingsOnClickOffices();
+            this.ymapsNewDraw(city);
     }
         
     CurrensyData.prototype.createListnersOffice = function(office, officeID) {
