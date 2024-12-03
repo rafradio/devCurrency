@@ -332,6 +332,34 @@ option:hover,  .active{
                     iconImageOffset: [-18, -42],
                     balloonVisible: false
                 });
+                
+                placemark.events.add('click', async function(evt) {
+                    const targetPlacemark = evt.get('target');
+                    console.log(targetPlacemark);
+
+                    const officeId = targetPlacemark.properties.get('id');
+
+                    
+
+                    
+
+                    // Закрываем балун, если он открывался
+                    self.myMap.balloon.close();
+
+                    // Изменение иконки пина на выделенную
+                    placemark.options.set('iconImageHref',
+                        highlightedPinImage); // Устанавливаем выделенный пин
+                    placemark.options.set('iconImageSize', [40, 46]);
+
+                    // Можно добавить логику, чтобы другие пины возвращались к стандартному состоянию
+                    self.myCollection.each(function(existingPlacemark) {
+                        if (existingPlacemark !== placemark) {
+                            existingPlacemark.options.set('iconImageHref',
+                                defaultPinImage
+                            ); // Возвращаем стандартное изображение
+                        }
+                    });
+                });
 
                 self.myCollection.add(placemark);
 
@@ -383,6 +411,34 @@ option:hover,  .active{
                     iconImageSize: [37, 43],
                     iconImageOffset: [-18, -42],
                     balloonVisible: false
+                });
+                
+                placemark.events.add('click', async function(evt) {
+                    const targetPlacemark = evt.get('target');
+                    console.log(targetPlacemark);
+
+                    const officeId = targetPlacemark.properties.get('id');
+
+                    
+
+                    
+
+                    // Закрываем балун, если он открывался
+                    self.myMap.balloon.close();
+
+                    // Изменение иконки пина на выделенную
+                    placemark.options.set('iconImageHref',
+                        highlightedPinImage); // Устанавливаем выделенный пин
+                    placemark.options.set('iconImageSize', [40, 46]);
+
+                    // Можно добавить логику, чтобы другие пины возвращались к стандартному состоянию
+                    self.myCollection.each(function(existingPlacemark) {
+                        if (existingPlacemark !== placemark) {
+                            existingPlacemark.options.set('iconImageHref',
+                                defaultPinImage
+                            ); // Возвращаем стандартное изображение
+                        }
+                    });
                 });
 
                 self.myCollection.add(placemark);
