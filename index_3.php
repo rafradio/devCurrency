@@ -185,7 +185,6 @@ option:hover,  .active{
 .currency-list-block {
     width: 90%;
     height: auto;
-    border: 0.2px solid gray;
     display: flex;
     position: relative;
     flex-direction: column;
@@ -197,7 +196,7 @@ option:hover,  .active{
     position: relative;
     width: 70%;
     height: 25px;
-    border: 0.2px solid gray;  
+    border-bottom: 0.2px solid gray;  
     flex-direction: row;
 }
 .first-currency-none {
@@ -211,7 +210,11 @@ option:hover,  .active{
     position: relative;
     width: 33.3%;
     height: 100%;
-    border: 0.2px solid gray; 
+    
+}
+.currency-element-curr {
+    align-items: center !important;
+    justify-content: center !important;
 }
 </style>
 <script src="https://api-maps.yandex.ru/2.1/?apikey=a0a0b5ec-c142-4ea8-b8e6-ae69a5859bef&lang=ru_RU&load=package.full"></script>
@@ -260,13 +263,13 @@ option:hover,  .active{
     <div class='currency-list-block'>
         <div class='currency-element first-currency-show'>
             <div class="currency-element-block"></div>
-            <div class="currency-element-block">Покупка</div>
-            <div class="currency-element-block">Продажа</div>
+            <div class="currency-element-block currency-element-curr">Покупка</div>
+            <div class="currency-element-block currency-element-curr">Продажа</div>
         </div>
         <div id="example-curr" class='currency-element first-currency-none'>
             <div class="currency-element-block"></div>
-            <div class="currency-element-block"></div>
-            <div class="currency-element-block"></div>
+            <div class="currency-element-block currency-element-curr"></div>
+            <div class="currency-element-block currency-element-curr"></div>
         </div>
     </div>
 </div>
@@ -275,6 +278,7 @@ option:hover,  .active{
     
     function CurrensyData() {
             this.dataFromApi = [];
+            this.flagsFromApi = [];
             this.dictCityOffices = new Map();
             this.allDictCityOffices = new Map();
             this.ymapsInit();         
@@ -330,7 +334,7 @@ option:hover,  .active{
                     iconImageHref: defaultPinImage,
                     iconImageSize: [37, 43],
                     iconImageOffset: [-18, -42],
-                    balloonVisible: false
+                    balloonContentHeader: "Балун метки",
                 });
                 
                 placemark.events.add('click', async function(evt) {
@@ -338,7 +342,10 @@ option:hover,  .active{
                     console.log(targetPlacemark);
 
                     const officeId = targetPlacemark.properties.get('id');
-
+                    const officeName = targetPlacemark.properties.get('name');
+                    console.log("После клика проверяем id = ", officeId);
+                   
+                    self.createListnersOffice(officeName, officeId);
                     
 
                     
@@ -381,7 +388,6 @@ option:hover,  .active{
     }
     
     CurrensyData.prototype.ymapsNewDraw = async function(city) {
-//        ymaps.ready(init);
         let self = this;
         
         const fetchUserLocation = async () => {
@@ -406,11 +412,13 @@ option:hover,  .active{
                     id: id,
                     name: label
                 }, {
+                    balloonContentHeader: "Балун метки",
                     iconLayout: 'default#image',
                     iconImageHref: defaultPinImage,
                     iconImageSize: [37, 43],
                     iconImageOffset: [-18, -42],
-                    balloonVisible: false
+                    hintContent: "Хинт метки"
+                    
                 });
                 
                 placemark.events.add('click', async function(evt) {
@@ -418,8 +426,10 @@ option:hover,  .active{
                     console.log(targetPlacemark);
 
                     const officeId = targetPlacemark.properties.get('id');
-
-                    
+                    const officeName = targetPlacemark.properties.get('name');
+                    console.log("После клика проверяем id = ", officeId);
+                   
+                    self.createListnersOffice(officeName, officeId);
 
                     
 
@@ -447,35 +457,24 @@ option:hover,  .active{
             
         self.myMap.geoObjects.add(self.myCollection);
         this.myMap.setCenter(data);
-        
-        async function init() {
-            let data = await fetchUserLocation();
-            console.log("Геолокация города = ", data._coordinates);
-            let dict = self.allDictCityOffices;
-            self.myMap = new ymaps.Map("map", { 
-                                    center: data, 
-                                    zoom: 12,
-                                    controls: ['zoomControl']
-                    });
-                    
-            let cityOffices = dict.get(city);
-        }
     }
     
     CurrensyData.prototype.parseCurrencies = function(result) {
-
-            let parentCurrency  = document.querySelectorAll('.currency-list-block')[0];
-            let childCurrency = document.getElementById("example-curr");
-            result.forEach((el, ind) => {
-                let clone = childCurrency.cloneNode(true);
-                clone.id = "";
-                clone.classList.remove("first-currency-none");
-                clone.classList.add("first-currency-show");
-                clone.children[0].innerHTML = el.currency_to;
-                clone.children[1].innerHTML = el.sum_buy;
-                clone.children[2].innerHTML = el.sum_sale;
-                parentCurrency.appendChild(clone);
-            });
+        
+        let parentCurrency  = document.querySelectorAll('.currency-list-block')[0];
+        let childCurrency = document.getElementById("example-curr");
+        result.forEach((el, ind) => {
+            let clone = childCurrency.cloneNode(true);
+            let flag = this.flagsFromApi.filter(x => x.code_iso_alph == el.currency_to);
+            console.log("Отрисовка флапгов = ", flag[0].icon);
+            clone.id = "";
+            clone.classList.remove("first-currency-none");
+            clone.classList.add("first-currency-show");
+            clone.children[0].innerHTML = el.currency_to;
+            clone.children[1].innerHTML = el.sum_buy;
+            clone.children[2].innerHTML = el.sum_sale;
+            parentCurrency.appendChild(clone);
+        });
     }
         
     CurrensyData.prototype.requestToApi = async function(position) {
@@ -497,6 +496,7 @@ option:hover,  .active{
                 }
                 const data = await response.json();
                 this.dataFromApi = data.data;
+                this.flagsFromApi = data.flags;
                 this.createAllDictioneryOffices();
                 let closestOffice = this.dataFromApi.reduce(function(prev, curr) {
                     let data1 = Math.sqrt( Math.pow((parseFloat(prev.latitude) - checkPosition[0]) ,2) + Math.pow((parseFloat(prev.longitude) - checkPosition[1]),2) );
