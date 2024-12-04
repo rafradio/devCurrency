@@ -190,6 +190,7 @@ option:hover,  .active{
     flex-direction: column;
     align-items: flex-start;
     justify-content: left;
+    font-weight: 600;
 }
 .currency-element {
     display: flex;
@@ -215,6 +216,14 @@ option:hover,  .active{
 .currency-element-curr {
     align-items: center !important;
     justify-content: center !important;
+}
+.flag-name {
+    margin-left: 15px;
+    transform: translateY(5px);
+}
+.flag-src {
+    width: 40px;
+    height: 24px;
 }
 </style>
 <script src="https://api-maps.yandex.ru/2.1/?apikey=a0a0b5ec-c142-4ea8-b8e6-ae69a5859bef&lang=ru_RU&load=package.full"></script>
@@ -470,9 +479,15 @@ option:hover,  .active{
             clone.id = "";
             clone.classList.remove("first-currency-none");
             clone.classList.add("first-currency-show");
-            clone.children[0].innerHTML = el.currency_to;
-            clone.children[1].innerHTML = el.sum_buy;
-            clone.children[2].innerHTML = el.sum_sale;
+            let pathToIcon = "https://dev.avangard.ru/img/icons/flags/" + flag[0].icon;
+            
+            clone.children[0].innerHTML = '<img class="flag-src" src="' + pathToIcon + '" alt="" srcset=""><span class="flag-name">' +  el.currency_to + '</span>';
+//            clone.children[0].innerHTML = el.currency_to;
+            let strV = el.sum_buy.substring(el.sum_buy.length -2 ,el.sum_buy.length) == "00" ? el.sum_buy.substring(0, el.sum_buy.length -2) : el.sum_buy;
+            clone.children[1].innerHTML = strV;
+            console.log("проверка нулей = ", el.sum_buy.substring(el.sum_buy.length -2 ,el.sum_buy.length)=="00");
+            strV = el.sum_sale.substring(el.sum_sale.length -2 ,el.sum_sale.length) == "00" ? el.sum_sale.substring(0, el.sum_sale.length -2) : el.sum_sale;
+            clone.children[2].innerHTML = strV;
             parentCurrency.appendChild(clone);
         });
     }
