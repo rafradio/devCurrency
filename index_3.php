@@ -198,8 +198,14 @@ option:hover,  .active{
     position: relative;
     width: 70%;
     height: 25px;
-    border-bottom: 0.2px solid gray;  
+    border-bottom: 0.9px solid #107340;  
     flex-direction: row;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    color: #232323;
+}
+.currency-element-no-border {
+    border-bottom: none !important;
 }
 .first-currency-none {
     display: none;
@@ -241,13 +247,7 @@ option:hover,  .active{
 
 <div class="rectangle_2">
     <h1 class="like-h1 h1-kursy">Курсы валют в офисах</h1>
-    <p class="p-kursy">Действительно на
-
-            <?php
-            date_default_timezone_set('Europe/Moscow');
-            echo date('H:i, d:m:Y', strtotime('now'));
-            ?>
-    </p>
+    <p class="p-kursy">Действительно на 12:19, 08.11.2024</p>
     <div class="controller-block">
         <div class="controller-item">
             <p class="p-class">Город</p>
@@ -280,7 +280,7 @@ option:hover,  .active{
         <div id="map" class="map-Yandex-Exact-Size map-Yandex-Exact-dsp"></div>
     </div>
     <div class='currency-list-block'>
-        <div class='currency-element first-currency-show'>
+        <div class='currency-element first-currency-show first-currency-show-nal'>
             <div class="currency-element-block"></div>
             <div class="currency-element-block currency-element-curr">Покупка</div>
             <div class="currency-element-block currency-element-curr">Продажа</div>
@@ -291,8 +291,7 @@ option:hover,  .active{
             <div class="currency-element-block currency-element-curr"></div>
         </div>
     </div>
-    
-        <h1 class="like-h1 h1-kursy beznal-block">Безналичные курсы валют</h1>
+    <h1 class="like-h1 h1-kursy beznal-block">Безналичные курсы валют</h1>
         <p class="p-kursy">Для физических лиц при совершении операций в интернет-банке<br> или мобильном приложении</p>
         <p class="">Действительно на
 
@@ -302,11 +301,18 @@ option:hover,  .active{
             ?>
         </p>
         <div class='currency-list-block'>
-            <div class='currency-element first-currency-show'>
+            <div class='currency-element first-currency-show currency-element-no-border'>
                 <div class="currency-element-block"></div>
                 <div class="currency-element-block currency-element-curr">Покупка</div>
                 <div class="currency-element-block currency-element-curr">Продажа</div>
             </div>
+            <?php
+                function roundNumber($number)
+                {
+                    // return round($number, 2);
+                    return number_format($number, 2, '.', '');
+                }
+                ?>
             <?php foreach ($cashlessRate as $cashlessRateItem): ?>
                 <div class='currency-element first-currency-show'>
                     <div class="currency-element-block">
@@ -314,8 +320,8 @@ option:hover,  .active{
                             <img src="https://dev.avangard.ru/img/icons/flags/<?= $flagPath; ?>" alt="" srcset="">
                             <span class="flag-name"><?= $cashlessRateItem['currency_to']; ?></span>
                     </div>
-                    <div class="currency-element-block currency-element-curr"><?= $cashlessRateItem['sum_buy']; ?></div>
-                    <div class="currency-element-block currency-element-curr"><?= $cashlessRateItem['sum_sale']; ?></div>
+                    <div class="currency-element-block currency-element-curr"><?= roundNumber($cashlessRateItem['sum_buy']); ?></div>
+                    <div class="currency-element-block currency-element-curr"><?= roundNumber($cashlessRateItem['sum_sale']); ?></div>
                 </div>
             <?php endforeach; ?>
         </div>
