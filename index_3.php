@@ -1,5 +1,6 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
+require($_SERVER["DOCUMENT_ROOT"] . "/rus/close/api/api_course/cashlessRate.php");
 $APPLICATION->SetTitle("Курсы валют");
 ?> 
 <style>
@@ -225,6 +226,9 @@ option:hover,  .active{
     width: 40px;
     height: 24px;
 }
+.beznal-block {
+    margin-top: 32px;
+}
 </style>
 <script src="https://api-maps.yandex.ru/2.1/?apikey=a0a0b5ec-c142-4ea8-b8e6-ae69a5859bef&lang=ru_RU&load=package.full"></script>
 <div class="rectangle_1">
@@ -237,7 +241,13 @@ option:hover,  .active{
 
 <div class="rectangle_2">
     <h1 class="like-h1 h1-kursy">Курсы валют в офисах</h1>
-    <p class="p-kursy">Действительно на 12:19, 08.11.2024</p>
+    <p class="p-kursy">Действительно на
+
+            <?php
+            date_default_timezone_set('Europe/Moscow');
+            echo date('H:i, d:m:Y', strtotime('now'));
+            ?>
+    </p>
     <div class="controller-block">
         <div class="controller-item">
             <p class="p-class">Город</p>
@@ -281,6 +291,34 @@ option:hover,  .active{
             <div class="currency-element-block currency-element-curr"></div>
         </div>
     </div>
+    
+        <h1 class="like-h1 h1-kursy beznal-block">Безналичные курсы валют</h1>
+        <p class="p-kursy">Для физических лиц при совершении операций в интернет-банке<br> или мобильном приложении</p>
+        <p class="">Действительно на
+
+            <?php
+            date_default_timezone_set('Europe/Moscow');
+            echo date('H:i, d:m:Y', strtotime('now'));
+            ?>
+        </p>
+        <div class='currency-list-block'>
+            <div class='currency-element first-currency-show'>
+                <div class="currency-element-block"></div>
+                <div class="currency-element-block currency-element-curr">Покупка</div>
+                <div class="currency-element-block currency-element-curr">Продажа</div>
+            </div>
+            <?php foreach ($cashlessRate as $cashlessRateItem): ?>
+                <div class='currency-element first-currency-show'>
+                    <div class="currency-element-block">
+                        <?php $flagPath = $cashlessRateItem['icon']; ?>
+                            <img src="https://dev.avangard.ru/img/icons/flags/<?= $flagPath; ?>" alt="" srcset="">
+                            <span class="flag-name"><?= $cashlessRateItem['currency_to']; ?></span>
+                    </div>
+                    <div class="currency-element-block currency-element-curr"><?= $cashlessRateItem['sum_buy']; ?></div>
+                    <div class="currency-element-block currency-element-curr"><?= $cashlessRateItem['sum_sale']; ?></div>
+                </div>
+            <?php endforeach; ?>
+        </div>
 </div>
 
 <script type="text/javascript">
@@ -479,6 +517,7 @@ option:hover,  .active{
             clone.id = "";
             clone.classList.remove("first-currency-none");
             clone.classList.add("first-currency-show");
+            clone.classList.add("first-currency-show-nal");
             let pathToIcon = "https://dev.avangard.ru/img/icons/flags/" + flag[0].icon;
             
             clone.children[0].innerHTML = '<img class="flag-src" src="' + pathToIcon + '" alt="" srcset=""><span class="flag-name">' +  el.currency_to + '</span>';
@@ -649,7 +688,7 @@ option:hover,  .active{
     }
         
     CurrensyData.prototype.createListnersOffice = function(office, officeID) {
-        let currencyBlock = document.querySelectorAll(".first-currency-show");
+        let currencyBlock = document.querySelectorAll(".first-currency-show-nal");
             console.log("from options this = ", officeID );
             currencyBlock.forEach((elm, ind) => {
                 if (ind != 0) {
