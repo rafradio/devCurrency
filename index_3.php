@@ -263,6 +263,9 @@ option:hover,  .active{
     position: relative;
     width: 45px;
     height: 35px;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(28px);
 }
 .converter-valut-input {
     display: flex;
@@ -292,6 +295,7 @@ option:hover,  .active{
     background-color: rgb(255, 255, 255);
     box-shadow: inset 0px 2px 3px 0px rgba(0, 0, 0, 0.38);
     color: #555b5d;
+    border-left: none !important;
 }
 .converter-valut-text {
     display: flex;
@@ -299,7 +303,18 @@ option:hover,  .active{
     margin: 0 !important;
     padding: 0 !important;
     color: #232323;
-    margin-bottom: 15px !important;
+    margin-bottom: 10px !important;
+    font-weight: 600;
+}
+.flag-converter {
+    width: 20px;
+    height: 20px;
+    float: left;
+    transform: translateY(5px);
+}
+.arrows-converter {
+    width: 25px;
+    height: 25px;
 }
 </style>
 <script src="https://api-maps.yandex.ru/2.1/?apikey=a0a0b5ec-c142-4ea8-b8e6-ae69a5859bef&lang=ru_RU&load=package.full"></script>
@@ -364,7 +379,7 @@ option:hover,  .active{
     </div>
 </div>
 <div class="rectangle_1">
-    <h1 class="like-h1 h1-kursy beznal-block">Конвертер валют</h1>
+    <img class="flag-converter" src="/img/icons/convertor.png" alt="" srcset=""><h1 class="like-h1 h1-kursy beznal-block">Конвертер валют</h1>
     <div class="converter-valut-block">
         <div class="converter-valut-item-wrap">
             <p class="converter-valut-text">У меня есть</p>
@@ -373,9 +388,9 @@ option:hover,  .active{
                 <select name="curr-from-select" id="curr-from-select" class="converter-valut-select"></select>
             </div>
         </div>
-        <button id="cross-course-button" class="converter-valut-button">
-            Поменять
-        </button>
+        <div id="cross-course-button" class="converter-valut-button">
+            <img class="arrows-converter" src="/img/icons/convertor_arrows.png" alt="" srcset="">
+        </div>
         <div class="converter-valut-item-wrap">
             <p class="converter-valut-text">Хочу получить</p>
             <div class="converter-valut-item">
@@ -1077,16 +1092,17 @@ option:hover,  .active{
         }
 
         #handleClickByCrossButton() {
-            const selectedFrom = currFromSelect.options[currFromSelect.selectedIndex];
-            const selectedTo = currToSelect.options[currToSelect.selectedIndex];
+            const selectedFrom = this.firstSelect.options[this.firstSelect.selectedIndex];
+            const selectedTo = this.secondSelect.options[this.secondSelect.selectedIndex];
 
             // Заполняем первый селект, исключая выбранное значение из второго
             this.#populateSelect(this.firstSelect, this.ratesInSelect, selectedTo.value, selectedFrom.value);
             this.#populateSelect(this.secondSelect, this.ratesInSelect, selectedFrom.value, selectedTo.value);
 
             // После обновления селектов, читаем новые выбранные значения
-            const updatedFromOption = currFromSelect.options[currFromSelect.selectedIndex];
-            const updatedToOption = currToSelect.options[currToSelect.selectedIndex];
+            const updatedFromOption = this.firstSelect.options[this.firstSelect.selectedIndex];
+            const updatedToOption = this.secondSelect.options[this.secondSelect.selectedIndex];
+            console.log("Проверяем калькулятор = ", updatedFromOption, updatedToOption);
 
             // Подсчет валют
             this.#calcConvertedAmount(this.firstInput, this.secondInput, updatedFromOption, updatedToOption);
