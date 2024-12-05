@@ -399,6 +399,7 @@ option:hover,  .active{
             </div>
         </div>
     </div>
+    <p class="p-kursy">Информация о курсах обмена валют приводится справочно и не является<br>публичной офертой.</p>
 </div>
     <div class="rectangle_2">
     <h1 class="like-h1 h1-kursy beznal-block">Безналичные курсы валют</h1>
@@ -516,7 +517,7 @@ option:hover,  .active{
                     
 
                     // Закрываем балун, если он открывался
-                    self.myMap.balloon.close();
+//                    self.myMap.balloon.close();
 
                     // Изменение иконки пина на выделенную
                     placemark.options.set('iconImageHref',
@@ -532,7 +533,8 @@ option:hover,  .active{
                         }
                     });
                 });
-
+//                placemark.properties.set('hintContent', 'Hello world');
+                placemark.options.set('hintContent', label);
                 self.myCollection.add(placemark);
 
             });
@@ -599,7 +601,7 @@ option:hover,  .active{
                     
 
                     // Закрываем балун, если он открывался
-                    self.myMap.balloon.close();
+//                    self.myMap.balloon.close();
 
                     // Изменение иконки пина на выделенную
                     placemark.options.set('iconImageHref',
@@ -615,7 +617,7 @@ option:hover,  .active{
                         }
                     });
                 });
-
+                placemark.properties.set('hintContent', label);
                 self.myCollection.add(placemark);
 
             });
@@ -646,7 +648,7 @@ option:hover,  .active{
                     }
                 });
             }
-            });
+        });
         result.forEach((el, ind) => {
             if (!(sortOrder.includes(el.currency_to))) {
                 sortedResult.push(el);
@@ -715,7 +717,10 @@ option:hover,  .active{
                 this.closestOfficeData = closestOffice;
                 this.parseCurrencies(result);
                 this.changeCitiesOffices(closestOffice);
-                
+                document.querySelectorAll(".db")[0].value = closestOffice.city;
+                document.querySelectorAll(".db")[1].value = closestOffice.label;
+                this.createListnersCities(closestOffice.city);
+                document.querySelectorAll(".db")[1].value = closestOffice.label;
             }
             catch(error) {
                 console.log(error.message);
