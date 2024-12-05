@@ -247,7 +247,12 @@ option:hover,  .active{
 
 <div class="rectangle_2">
     <h1 class="like-h1 h1-kursy">Курсы валют в офисах</h1>
-    <p class="p-kursy">Действительно на 12:19, 08.11.2024</p>
+    <p class="p-kursy">Действительно на
+
+            <?php
+            date_default_timezone_set('Europe/Moscow');
+            echo date('H:i, d:m:Y', strtotime('now'));
+            ?></p>
     <div class="controller-block">
         <div class="controller-item">
             <p class="p-class">Город</p>
@@ -332,6 +337,7 @@ option:hover,  .active{
     function CurrensyData() {
             this.dataFromApi = [];
             this.flagsFromApi = [];
+            this.closestOfficeData = [];
             this.dictCityOffices = new Map();
             this.allDictCityOffices = new Map();
             this.ymapsInit();         
@@ -362,7 +368,7 @@ option:hover,  .active{
             let userLock = await fetchUserLocation();
             await self.requestToApi(userLock);
             let dict = self.createAllDictioneryOffices();
-            console.log("Собираем коллекцию пинов все = ", dict.size);
+            console.log("Собираем коллекцию пинов все = ", dict, self.closestOfficeData);
             self.myMap = new ymaps.Map("map", { 
                                     center: userLock, 
                                     zoom: 12,
@@ -516,10 +522,39 @@ option:hover,  .active{
         
         let parentCurrency  = document.querySelectorAll('.currency-list-block')[0];
         let childCurrency = document.getElementById("example-curr");
+        
+        let sortOrder = ['USD', 'EUR', 'CNY', 'CHF', 'GBP', 'AED'];
+        let sortedResult = [];
+        let sortedResultAtEnd = [];
+        
+        sortOrder.forEach((elm, ind) => {
+            let adding = result.filter(x => x.currency_to == elm);
+            console.log("проверяем adding = ", adding);
+            if (adding.length > 0) {
+                adding.forEach((elmnt, index) => {
+                    if (elmnt.currency_from == "RUR") {
+                        sortedResult.push(elmnt);
+                    } else {
+//                        elmnt.currency_to += "/" + elmnt.currency_from;
+                        sortedResultAtEnd.push(elmnt);
+                    }
+                });
+            }
+            });
         result.forEach((el, ind) => {
+            if (!(sortOrder.includes(el.currency_to))) {
+                sortedResult.push(el);
+            }
+        });
+        sortedResultAtEnd.forEach((elm, ind) => {
+            sortedResult.push(elm);
+        });
+        
+        
+        sortedResult.forEach((el, ind) => {
             let clone = childCurrency.cloneNode(true);
             let flag = this.flagsFromApi.filter(x => x.code_iso_alph == el.currency_to);
-            console.log("Отрисовка флапгов = ", flag[0].icon);
+//            console.log("Отрисовка флапгов = ", flag[0].icon);
             clone.id = "";
             clone.classList.remove("first-currency-none");
             clone.classList.add("first-currency-show");
@@ -556,6 +591,7 @@ option:hover,  .active{
                 }
                 const data = await response.json();
                 this.dataFromApi = data.data;
+                this.dataFromApi.sort((a, b) => a.city.localeCompare(b.city));
                 this.flagsFromApi = data.flags;
                 this.createAllDictioneryOffices();
                 let closestOffice = this.dataFromApi.reduce(function(prev, curr) {
@@ -568,9 +604,10 @@ option:hover,  .active{
                 let result = this.dataFromApi.filter(x => x.office_id == closestOffice.office_id);
                 console.log(" валюты  from api result = ", result);
 //                console.log("from api result город = ", result);
+                this.closestOfficeData = closestOffice;
                 this.parseCurrencies(result);
                 this.changeCitiesOffices(closestOffice);
-                this.closestOfficeData = closestOffice;
+                
             }
             catch(error) {
                 console.log(error.message);
@@ -706,7 +743,7 @@ option:hover,  .active{
     }
         
     CurrensyData.prototype.settingsOnClickOffices = function() {
-        console.log("Проверяем новую клики офисов");
+//        console.log("Проверяем новую клики офисов");
         let fieldLink = document.querySelectorAll(".db")[1];
         let dataLink = document.querySelectorAll(".db-datalist")[1];
         let self = this;
@@ -723,9 +760,9 @@ option:hover,  .active{
         }
 
         for (let option of dataLink.options) {
-            console.log("Проверяем новую клики офисов = ", option);
+//            console.log("Проверяем новую клики офисов = ", option);
             option.onclick = function () {
-                console.log("Проверяем новую клики офисов = ", option.value);
+//                console.log("Проверяем новую клики офисов = ", option.value);
                 fieldLink.value = option.value;
                 dataLink.style.display = 'none';
                 fieldLink.style.borderRadius = "6px";
