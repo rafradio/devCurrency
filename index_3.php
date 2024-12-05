@@ -19,6 +19,7 @@ $APPLICATION->SetTitle("Курсы валют");
     padding-right: 30px !important;
     width: 100%;
     height: auto;
+    padding-bottom: 35px;
 }
 .right-column {
     width: 670px !important;
@@ -235,6 +236,71 @@ option:hover,  .active{
 .beznal-block {
     margin-top: 32px;
 }
+.converter-valut-block {
+    display: flex;
+    margin-top: 31px;
+    position: relative;
+    flex-direction: row;
+}
+.converter-valut-item-wrap {
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    justify-content: left;
+    width: 190px;
+    height: 71px;
+}
+.converter-valut-item {
+    display: flex;
+    flex-direction: row !important;
+    position: relative;
+    width: 100%;
+    height: 34px;
+    font-size: 13px;
+}
+.converter-valut-button {
+    display: flex;
+    position: relative;
+    width: 45px;
+    height: 35px;
+}
+.converter-valut-input {
+    display: flex;
+    position: relative;
+    width: 61%;
+    padding-left: 13px;
+    border-width: 0.5px;
+    border-color: rgb(152, 152, 152);
+    border-style: solid;
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    background-color: rgb(255, 255, 255);
+    box-shadow: inset 0px 2px 3px 0px rgba(0, 0, 0, 0.38);
+    color: #555b5d;
+}
+.converter-valut-select {
+    display: flex;
+    position: relative;
+    padding-left: 6px;
+    padding-right: 6px;
+    width: 39%;
+    border-width: 0.5px;
+    border-color: rgb(152, 152, 152);
+    border-style: solid;
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    background-color: rgb(255, 255, 255);
+    box-shadow: inset 0px 2px 3px 0px rgba(0, 0, 0, 0.38);
+    color: #555b5d;
+}
+.converter-valut-text {
+    display: flex;
+    position: relative;
+    margin: 0 !important;
+    padding: 0 !important;
+    color: #232323;
+    margin-bottom: 15px !important;
+}
 </style>
 <script src="https://api-maps.yandex.ru/2.1/?apikey=a0a0b5ec-c142-4ea8-b8e6-ae69a5859bef&lang=ru_RU&load=package.full"></script>
 <div class="rectangle_1">
@@ -243,7 +309,7 @@ option:hover,  .active{
             Для вас доступен спектр услуг по обмену валют, который гарантирует комфорт и безопасность ваших финансовых операций. 
             Обменять валюту можно как за наличные, так и безналичным способом через наш сайт или мобильное приложение. 
         </p>
-    </div>
+</div>
 
 <div class="rectangle_2">
     <h1 class="like-h1 h1-kursy">Курсы валют в офисах</h1>
@@ -296,32 +362,30 @@ option:hover,  .active{
             <div class="currency-element-block currency-element-curr"></div>
         </div>
     </div>
-    <div>
-    <button id="change-course">
-        Поменять курс
-    </button>
-
-    <div class="flex-container d-grid gap-5 p-5">
-        <div class="d-flex me-4">
-            <input class="w-10 " id="curr-from-input" type="number" placeholder="Введите значение" />
-
-            <select name="curr-from-select" id="curr-from-select">
-            </select>
+</div>
+<div class="rectangle_1">
+    <h1 class="like-h1 h1-kursy beznal-block">Конвертер валют</h1>
+    <div class="converter-valut-block">
+        <div class="converter-valut-item-wrap">
+            <p class="converter-valut-text">У меня есть</p>
+            <div class="converter-valut-item">
+                <input class="converter-valut-input" id="curr-from-input" type="number" placeholder="Введите значение" />
+                <select name="curr-from-select" id="curr-from-select" class="converter-valut-select"></select>
+            </div>
         </div>
-
-        <button id="cross-course-button" class="w-min" style="width: 200px;">
+        <button id="cross-course-button" class="converter-valut-button">
             Поменять
         </button>
-
-        <div class="d-flex">
-            <input id="curr-to-input" type="number" placeholder="Введите значение" />
-
-            <select name="curr-to-select" id="curr-to-select">
-            </select>
+        <div class="converter-valut-item-wrap">
+            <p class="converter-valut-text">Хочу получить</p>
+            <div class="converter-valut-item">
+                <input id="curr-to-input" class="converter-valut-input" type="number" placeholder="Введите значение" />
+                <select name="curr-to-select" id="curr-to-select" class="converter-valut-select"></select>
+            </div>
         </div>
     </div>
-
 </div>
+    <div class="rectangle_2">
     <h1 class="like-h1 h1-kursy beznal-block">Безналичные курсы валют</h1>
         <p class="p-kursy">Для физических лиц при совершении операций в интернет-банке<br> или мобильном приложении</p>
         <p class="">Действительно на
@@ -1080,11 +1144,7 @@ option:hover,  .active{
         ];
 
         const converter = new Converter(currFromSelect, currToSelect, currFromInput, currToInput, crossCourseButton);
-//        converter.init(currencyArray, 'RUR', 'USD');
 
-        const buttonChange = document.querySelector('#change-course');
-        buttonChange.addEventListener('click', () => converter.updateCurrencyRates(currencyArray2, 'RUR', 'USD'));
-        
         //
         
         let obj = new CurrensyData(converter);
