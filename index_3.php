@@ -561,6 +561,7 @@ option:hover,  .active{
         const fetchUserLocation = async () => {
             const geolocation = ymaps.geolocation;
             const res = await ymaps.geocode(city);
+            console.log("Координаты города = ", res.geoObjects.get(0).options.getCoordinates);
             return res.geoObjects.get(0).geometry._coordinates;
         }
         
@@ -647,6 +648,7 @@ option:hover,  .active{
                     } else {
 //                        elmnt["currency_to"] = String(elmnt["currency_to"]) +  "/" + String(elmnt["currency_from"]);
 //                        console.log("Кросс курс = ", elmnt["currency_to"], elmnt["currency_from"]);
+//                        console.log("Кросс курс = ", elmnt.currency_to, elmnt.currency_from);
                         sortedResultAtEnd.push(elmnt);
                         
                     }
@@ -686,7 +688,9 @@ option:hover,  .active{
             }
         });
         
-        this.converter.init(result);
+        let arrayConver = result.filter(x => x.currency_from == "RUR");
+        arrayConver = arrayConver.filter(x => parseFloat(x.sum_sale) != 0 || parseFloat(x.sum_buy) != 0);
+        this.converter.init(arrayConver);
     }
         
     CurrensyData.prototype.requestToApi = async function(position) {
@@ -909,6 +913,9 @@ option:hover,  .active{
                 fieldLink.style.borderRadius = "6px";
                 self.createListnersOffice(option.value, option.dataset.officeid);
                 fieldLink.blur();
+                for (let option of dataLink.options) {
+                    option.style.display = "block";
+                };
             }
         }
         fieldLink.oninput = function() {
@@ -926,7 +933,9 @@ option:hover,  .active{
             fieldLink.onblur = function (event) {
                 dataLink.style.display = 'none';
                 fieldLink.style.borderRadius = "6px 6px 6px 6px";  
-
+                for (let option of dataLink.options) {
+                    option.style.display = "block";
+                };
             };
     }
         
@@ -955,6 +964,9 @@ option:hover,  .active{
                 fieldLink.style.borderRadius = "6px";
                 self.createListnersCities(option.value);
                 fieldLink.blur();
+                for (let option of dataLink.options) {
+                    option.style.display = "block";
+                };
             }
         }
 
@@ -973,7 +985,9 @@ option:hover,  .active{
             fieldLink.onblur = function (event) {
                 dataLink.style.display = 'none';
                 fieldLink.style.borderRadius = "6px 6px 6px 6px";  
-
+                for (let option of dataLink.options) {
+                    option.style.display = "block";
+                };
             };
     }
     
@@ -986,27 +1000,6 @@ option:hover,  .active{
             this.firstInput = firstInput;
             this.secondInput = secondInput;
             this.crossCourseButton = crossCourseButton;
-        }
-
-        async init(rates) {
-            this.ratesInSelect = this.#getFullRates(rates);
-
-            this.firstInput.value = 0;
-            this.secondInput.value = 0;
-
-            // Выбираем первый и второй элемент массива, если они существуют
-            const firstSelectValue = this.ratesInSelect[0]?.currency_to || 'RUR';
-            const secondSelectValue = this.ratesInSelect[1]?.currency_to || 'USD';
-
-            // Проверяем, что оба значения существуют
-            if (!firstSelectValue || !secondSelectValue) {
-                console.error("Недостаточно данных для инициализации селектов.");
-                return;
-            }
-
-            // Заполняем селекты
-            this.#populateSelect(this.firstSelect, this.ratesInSelect, firstSelectValue, secondSelectValue);
-            this.#populateSelect(this.secondSelect, this.ratesInSelect, secondSelectValue, firstSelectValue);
 
             // Слушатели событий на инпуты
             this.firstInput.addEventListener("input", (evt) => this.#calculateExchange(evt, this.secondInput, this.firstSelect, this.secondSelect));
@@ -1020,7 +1013,7 @@ option:hover,  .active{
             this.crossCourseButton.addEventListener("click", this.#handleClickByCrossButton.bind(this));
         }
 
-        updateCurrencyRates = (rates) => {
+        init = (rates) => {
             this.ratesInSelect = this.#getFullRates(rates);
 
             this.firstInput.value = 0;
@@ -1135,7 +1128,6 @@ option:hover,  .active{
             // После обновления селектов, читаем новые выбранные значения
             const updatedFromOption = this.firstSelect.options[this.firstSelect.selectedIndex];
             const updatedToOption = this.secondSelect.options[this.secondSelect.selectedIndex];
-            console.log("Проверяем калькулятор = ", updatedFromOption, updatedToOption);
 
             // Подсчет валют
             this.#calcConvertedAmount(this.firstInput, this.secondInput, updatedFromOption, updatedToOption);
