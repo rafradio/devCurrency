@@ -540,6 +540,7 @@ option:hover,  .active{
 
             self.myMap.setBounds(self.myCollection.getBounds());
             self.myMap.setZoom(7);
+            
                 
 //                self.myMap.zoomRange.get(self.myMap.getCenter()).then(zoomRange => {
 //                    if (self.myMap.getZoom() > zoomRange[1]) {
@@ -621,6 +622,7 @@ option:hover,  .active{
         self.myMap.geoObjects.add(self.myCollection);
         console.log("Координаты яндекса длина = ", this.myMap.geoObjects.getLength());
         this.myMap.setCenter(data);
+        self.changePinOnMap(self.closestOfficeData.office_id);
     }
     
     CurrensyData.prototype.parseCurrencies = function(result) {
@@ -723,6 +725,7 @@ option:hover,  .active{
                 document.querySelectorAll(".db")[1].value = closestOffice.label;
                 this.createListnersCities(closestOffice.city);
                 document.querySelectorAll(".db")[1].value = closestOffice.label;
+//                this.changePinOnMap(closestOffice.id);
             }
             catch(error) {
                 console.log(error.message);
@@ -854,26 +857,27 @@ option:hover,  .active{
                 }
             });
             let result = this.dataFromApi.filter(x => x.office_id == officeID);
-            //  Меняем пин на активный
-            const highlightedPinImage = '/img/icons/pin-1.png';
-            for (var i = 0; i < this.myCollection.getLength(); i++) {
-                var geoObject = this.myCollection.get(i);
-                if (geoObject instanceof ymaps.Placemark) {
-                    if (geoObject.properties.get('id') == officeID) {
-                        console.log("Поменяли");
-                        this.myCollection.get(i).options.set('iconImageHref', highlightedPinImage);
-                    }
-//                  console.log("меняем пин на активный", geoObject.options.get('iconImageHref'));
-                }
-            }
-            for (var i = 0; i < this.myCollection.getLength(); i++) {
-                var geoObject = this.myCollection.get(i);
-                if (geoObject instanceof ymaps.Placemark) {
-                  console.log("меняем пин на активный", geoObject.options.get('iconImageHref'));
-                }
-            }
-//            this.myMap.geoObjects.add(this.myCollection);
+            
+            this.changePinOnMap(officeID);
             this.parseCurrencies(result);
+    }
+    
+    CurrensyData.prototype.changePinOnMap = function(officeID) {
+        //  Меняем пин на активный
+        const highlightedPinImage = '/img/icons/pin-1.png';
+        const defaultPinImage = '/img/marker.png';
+        for (var i = 0; i < this.myCollection.getLength(); i++) {
+            var geoObject = this.myCollection.get(i);
+            if (geoObject instanceof ymaps.Placemark) {
+                if (geoObject.properties.get('id') == officeID) {
+                    console.log("Поменяли");
+                    this.myCollection.get(i).options.set('iconImageHref', highlightedPinImage);
+                } else {
+                    this.myCollection.get(i).options.set('iconImageHref', defaultPinImage);
+                }
+//                  console.log("меняем пин на активный", geoObject.options.get('iconImageHref'));
+            }
+        }
     }
         
     CurrensyData.prototype.settingsOnClickOffices = function() {
