@@ -512,12 +512,6 @@ option:hover,  .active{
                     console.log("После клика проверяем id = ", officeId);
                    
                     self.createListnersOffice(officeName, officeId);
-                    
-
-                    
-
-                    // Закрываем балун, если он открывался
-//                    self.myMap.balloon.close();
 
                     // Изменение иконки пина на выделенную
                     placemark.options.set('iconImageHref',
@@ -540,6 +534,9 @@ option:hover,  .active{
             });
 
             self.myMap.geoObjects.add(self.myCollection);
+            console.log("Координаты коллекции яндекса длина = ", self.myCollection.getLength());
+            
+            
 
             self.myMap.setBounds(self.myCollection.getBounds());
             self.myMap.setZoom(7);
@@ -604,8 +601,7 @@ option:hover,  .active{
 //                    self.myMap.balloon.close();
 
                     // Изменение иконки пина на выделенную
-                    placemark.options.set('iconImageHref',
-                        highlightedPinImage); // Устанавливаем выделенный пин
+                    placemark.options.set('iconImageHref', highlightedPinImage);
                     placemark.options.set('iconImageSize', [40, 46]);
 
                     // Можно добавить логику, чтобы другие пины возвращались к стандартному состоянию
@@ -623,6 +619,7 @@ option:hover,  .active{
             });
             
         self.myMap.geoObjects.add(self.myCollection);
+        console.log("Координаты яндекса длина = ", this.myMap.geoObjects.getLength());
         this.myMap.setCenter(data);
     }
     
@@ -637,14 +634,16 @@ option:hover,  .active{
         
         sortOrder.forEach((elm, ind) => {
             let adding = result.filter(x => x.currency_to == elm);
-            console.log("проверяем adding = ", adding);
+//            console.log("проверяем adding = ", adding);
             if (adding.length > 0) {
                 adding.forEach((elmnt, index) => {
                     if (elmnt.currency_from == "RUR") {
                         sortedResult.push(elmnt);
                     } else {
-//                        elmnt.currency_to += "/" + elmnt.currency_from;
+//                        elmnt["currency_to"] = String(elmnt["currency_to"]) +  "/" + String(elmnt["currency_from"]);
+//                        console.log("Кросс курс = ", elmnt["currency_to"], elmnt["currency_from"]);
                         sortedResultAtEnd.push(elmnt);
+                        
                     }
                 });
             }
@@ -656,27 +655,30 @@ option:hover,  .active{
         });
         sortedResultAtEnd.forEach((elm, ind) => {
             sortedResult.push(elm);
+//            console.log("Кросс курс = ", elm);
         });
         
         
         sortedResult.forEach((el, ind) => {
-            let clone = childCurrency.cloneNode(true);
-            let flag = this.flagsFromApi.filter(x => x.code_iso_alph == el.currency_to);
-//            console.log("Отрисовка флапгов = ", flag[0].icon);
-            clone.id = "";
-            clone.classList.remove("first-currency-none");
-            clone.classList.add("first-currency-show");
-            clone.classList.add("first-currency-show-nal");
-            let pathToIcon = "https://dev.avangard.ru/img/icons/flags/" + flag[0].icon;
-            
-            clone.children[0].innerHTML = '<img class="flag-src" src="' + pathToIcon + '" alt="" srcset=""><span class="flag-name">' +  el.currency_to + '</span>';
-//            clone.children[0].innerHTML = el.currency_to;
-            let strV = el.sum_buy.substring(el.sum_buy.length -2 ,el.sum_buy.length) == "00" ? el.sum_buy.substring(0, el.sum_buy.length -2) : el.sum_buy;
-            clone.children[1].innerHTML = strV;
-            console.log("проверка нулей = ", el.sum_buy.substring(el.sum_buy.length -2 ,el.sum_buy.length)=="00");
-            strV = el.sum_sale.substring(el.sum_sale.length -2 ,el.sum_sale.length) == "00" ? el.sum_sale.substring(0, el.sum_sale.length -2) : el.sum_sale;
-            clone.children[2].innerHTML = strV;
-            parentCurrency.appendChild(clone);
+            if (parseFloat(el.sum_sale) != 0 || parseFloat(el.sum_buy) != 0) {
+                let clone = childCurrency.cloneNode(true);
+                let flag = this.flagsFromApi.filter(x => x.code_iso_alph == el.currency_to);
+    //            console.log("Отрисовка флапгов = ", flag[0].icon);
+                clone.id = "";
+                clone.classList.remove("first-currency-none");
+                clone.classList.add("first-currency-show");
+                clone.classList.add("first-currency-show-nal");
+                let pathToIcon = "https://dev.avangard.ru/img/icons/flags/" + flag[0].icon;
+                let labelCur = el.currency_from == "RUR" ? el.currency_to : el.currency_to + " / " + el.currency_from;
+                clone.children[0].innerHTML = '<img class="flag-src" src="' + pathToIcon + '" alt="" srcset=""><span class="flag-name">' +  labelCur + '</span>';
+    //            clone.children[0].innerHTML = el.currency_to;
+                let strV = el.sum_buy.substring(el.sum_buy.length -2 ,el.sum_buy.length) == "00" ? el.sum_buy.substring(0, el.sum_buy.length -2) : el.sum_buy;
+                clone.children[1].innerHTML = strV;
+                console.log("проверка нулей = ", el.sum_buy.substring(el.sum_buy.length -2 ,el.sum_buy.length)=="00");
+                strV = el.sum_sale.substring(el.sum_sale.length -2 ,el.sum_sale.length) == "00" ? el.sum_sale.substring(0, el.sum_sale.length -2) : el.sum_sale;
+                clone.children[2].innerHTML = strV;
+                parentCurrency.appendChild(clone);
+            }
         });
         
         this.converter.init(result);
@@ -740,11 +742,11 @@ option:hover,  .active{
                 let arr = [];
                 arr.push([elm.label, elm.office_id, elm.latitude, elm.longitude]);
                 this.allDictCityOffices.set(elm.city, arr);
-                if (elm.city == 'Владивосток') console.log("Владивосток", this.allDictCityOffices.get('Владивосток'));
+//                if (elm.city == 'Владивосток') console.log("Владивосток", this.allDictCityOffices.get('Владивосток'));
             } else {
 
                 let arr = this.allDictCityOffices.get(elm.city);
-                if (elm.city == 'Владивосток') console.log("Владивосток", arr);
+//                if (elm.city == 'Владивосток') console.log("Владивосток", arr);
                 let arr1 = [];
                 arr.forEach((elm, ind) => {
                     arr1.push(elm[1]);
@@ -775,11 +777,11 @@ option:hover,  .active{
                 let arr = [];
                 arr.push([elm.label, elm.office_id, elm.latitude, elm.longitude]);
                 this.dictCityOffices.set(elm.city, arr);
-                if (elm.city == 'Владивосток') console.log("Владивосток", this.dictCityOffices.get('Владивосток'));
+//                if (elm.city == 'Владивосток') console.log("Владивосток", this.dictCityOffices.get('Владивосток'));
             } else {
 
                 let arr = this.dictCityOffices.get(elm.city);
-                if (elm.city == 'Владивосток') console.log("Владивосток", arr);
+//                if (elm.city == 'Владивосток') console.log("Владивосток", arr);
                 let arr1 = [];
                 arr.forEach((elm, ind) => {
                     arr1.push(elm[1]);
@@ -852,6 +854,25 @@ option:hover,  .active{
                 }
             });
             let result = this.dataFromApi.filter(x => x.office_id == officeID);
+            //  Меняем пин на активный
+            const highlightedPinImage = '/img/icons/pin-1.png';
+            for (var i = 0; i < this.myCollection.getLength(); i++) {
+                var geoObject = this.myCollection.get(i);
+                if (geoObject instanceof ymaps.Placemark) {
+                    if (geoObject.properties.get('id') == officeID) {
+                        console.log("Поменяли");
+                        this.myCollection.get(i).options.set('iconImageHref', highlightedPinImage);
+                    }
+//                  console.log("меняем пин на активный", geoObject.options.get('iconImageHref'));
+                }
+            }
+            for (var i = 0; i < this.myCollection.getLength(); i++) {
+                var geoObject = this.myCollection.get(i);
+                if (geoObject instanceof ymaps.Placemark) {
+                  console.log("меняем пин на активный", geoObject.options.get('iconImageHref'));
+                }
+            }
+//            this.myMap.geoObjects.add(this.myCollection);
             this.parseCurrencies(result);
     }
         
