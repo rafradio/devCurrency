@@ -223,7 +223,10 @@ option:hover,  .active{
 }
 .currency-element-curr {
     align-items: center !important;
-    justify-content: center !important;
+    justify-content: right !important;
+}
+.currency-element-curr-digit {
+    transform: translateX(-9px);
 }
 .flag-name {
     margin-left: 15px;
@@ -373,8 +376,8 @@ option:hover,  .active{
         </div>
         <div id="example-curr" class='currency-element first-currency-none'>
             <div class="currency-element-block"></div>
-            <div class="currency-element-block currency-element-curr"></div>
-            <div class="currency-element-block currency-element-curr"></div>
+            <div class="currency-element-block currency-element-curr currency-element-curr-digit"></div>
+            <div class="currency-element-block currency-element-curr currency-element-curr-digit"></div>
         </div>
     </div>
 </div>
@@ -431,8 +434,8 @@ option:hover,  .active{
                             <img src="https://dev.avangard.ru/img/icons/flags/<?= $flagPath; ?>" alt="" srcset="">
                             <span class="flag-name"><?= $cashlessRateItem['currency_to']; ?></span>
                     </div>
-                    <div class="currency-element-block currency-element-curr"><?= roundNumber($cashlessRateItem['sum_buy']); ?></div>
-                    <div class="currency-element-block currency-element-curr"><?= roundNumber($cashlessRateItem['sum_sale']); ?></div>
+                    <div class="currency-element-block currency-element-curr currency-element-curr-digit"><?= roundNumber($cashlessRateItem['sum_buy']); ?></div>
+                    <div class="currency-element-block currency-element-curr currency-element-curr-digit"><?= roundNumber($cashlessRateItem['sum_sale']); ?></div>
                 </div>
             <?php endforeach; ?>
         </div>
