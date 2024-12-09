@@ -28,20 +28,30 @@ $APPLICATION->SetTitle("Курсы валют");
 }
 .map-Yandex-Size {
     width: 90%;
-    height: 525px;
+    height: 0px;
     margin-bottom: 20px;
     z-index: 10;
+    transition: height 0.5s ease-in-out;
 }
 .map-Yandex-Exact-Size {
     z-index: 10;
     width: 100%;
     height: 525px;
+    opacity: 0;
+    transition: opacity;
+    display: none;
 }
 .map-Yandex-Exact-dsp {
-    display: none;
+    display: block;
+    animation: map-yandex-animate 0.5s forwards;
+    animation-timing-function: ease-in-out;
+    -webkit-animation-timing-function: ease-in-out;
 }
 .map-visibility-1 {
     display: none;
+}
+.map-visibility-new {
+    height: 525px;
 }
 .map-visibility {
     animation: map-animate 0.25s forwards;
@@ -56,7 +66,17 @@ $APPLICATION->SetTitle("Курсы валют");
         height: 525px;
     }
 } 
-
+@keyframes map-yandex-animate {
+    0% {
+        opacity: 0;
+    }
+    95% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+} 
 
 .p-kursy {
     margin-bottom: 20px !important;
@@ -365,8 +385,8 @@ option:hover,  .active{
             </div>
         </div>
     </div>
-    <div id="map-wrap" class="map-Yandex-Size map-visibility-1">
-        <div id="map" class="map-Yandex-Exact-Size map-Yandex-Exact-dsp"></div>
+    <div id="map-wrap" class="map-Yandex-Size">
+        <div id="map" class="map-Yandex-Exact-Size"></div>
     </div>
     <div class='currency-list-block'>
         <div class='currency-element first-currency-show first-currency-show-nal'>
@@ -488,7 +508,7 @@ option:hover,  .active{
             let cityOffices = dict.get(self.closestOfficeData.city);
             
             const defaultPinImage = '/img/marker.png'; // Стандартное изображение
-            const highlightedPinImage = '/img/icons/pin-1.png'; // Выделенное изображение
+            const highlightedPinImage = '/img/icons/orangePin.svg'; // Выделенное изображение
                 
             self.myCollection = new ymaps.GeoObjectCollection();
             cityOffices.forEach(item => {
@@ -519,7 +539,7 @@ option:hover,  .active{
                     // Изменение иконки пина на выделенную
                     placemark.options.set('iconImageHref',
                         highlightedPinImage); // Устанавливаем выделенный пин
-                    placemark.options.set('iconImageSize', [40, 46]);
+                    placemark.options.set('iconImageSize', [37, 43]);
 
                     // Можно добавить логику, чтобы другие пины возвращались к стандартному состоянию
                     self.myCollection.each(function(existingPlacemark) {
@@ -529,6 +549,7 @@ option:hover,  .active{
                             ); // Возвращаем стандартное изображение
                         }
                     });
+                    document.querySelectorAll(".db")[1].value = label;
                 });
 //                placemark.properties.set('hintContent', 'Hello world');
                 placemark.options.set('hintContent', label);
@@ -559,10 +580,9 @@ option:hover,  .active{
         let self = this;
         
         const fetchUserLocation = async () => {
-            const geolocation = ymaps.geolocation;
             const res = await ymaps.geocode(city);
-            console.log("Координаты города = ", res.geoObjects.get(0).options.getCoordinates);
-            return res.geoObjects.get(0).geometry._coordinates;
+            console.log("Координаты города по названию = ", res.geoObjects.get(0).geometry.getCoordinates());
+            return res.geoObjects.get(0).geometry.getCoordinates();
         }
         
         let data = await fetchUserLocation();
@@ -571,7 +591,7 @@ option:hover,  .active{
         
         let cityOffices = this.allDictCityOffices.get(city);
         const defaultPinImage = '/img/marker.png'; // Стандартное изображение
-        const highlightedPinImage = '/img/icons/pin-1.png'; // Выделенное изображение
+        const highlightedPinImage = '/img/icons/orangePin.svg'; // Выделенное изображение
         
         cityOffices.forEach(item => {
                 let [label, id, latitude, longitude] = item;
@@ -607,7 +627,7 @@ option:hover,  .active{
 
                     // Изменение иконки пина на выделенную
                     placemark.options.set('iconImageHref', highlightedPinImage);
-                    placemark.options.set('iconImageSize', [40, 46]);
+                    placemark.options.set('iconImageSize', [37, 43]);
 
                     // Можно добавить логику, чтобы другие пины возвращались к стандартному состоянию
                     self.myCollection.each(function(existingPlacemark) {
@@ -617,6 +637,7 @@ option:hover,  .active{
                             ); // Возвращаем стандартное изображение
                         }
                     });
+                    document.querySelectorAll(".db")[1].value = label;
                 });
                 placemark.properties.set('hintContent', label);
                 self.myCollection.add(placemark);
@@ -646,9 +667,6 @@ option:hover,  .active{
                     if (elmnt.currency_from == "RUR") {
                         sortedResult.push(elmnt);
                     } else {
-//                        elmnt["currency_to"] = String(elmnt["currency_to"]) +  "/" + String(elmnt["currency_from"]);
-//                        console.log("Кросс курс = ", elmnt["currency_to"], elmnt["currency_from"]);
-//                        console.log("Кросс курс = ", elmnt.currency_to, elmnt.currency_from);
                         sortedResultAtEnd.push(elmnt);
                         
                     }
@@ -717,7 +735,7 @@ option:hover,  .active{
                 this.createAllDictioneryOffices();
                 let closestOffice = this.dataFromApi.reduce(function(prev, curr) {
                     let data1 = Math.sqrt( Math.pow((parseFloat(prev.latitude) - checkPosition[0]) ,2) + Math.pow((parseFloat(prev.longitude) - checkPosition[1]),2) );
-                    let data2 = Math.sqrt( Math.pow((parseFloat(curr.latitude) - checkPosition[0]),2) + Math.pow((parseFloat(curr.longitude) - checkPosition[0]),2) );
+                    let data2 = Math.sqrt( Math.pow((parseFloat(curr.latitude) - checkPosition[0]),2) + Math.pow((parseFloat(curr.longitude) - checkPosition[1]),2) );
                     return (Math.abs(data2) < Math.abs(data1) ? curr : prev);
                 });
                 console.log("from api result ближайший офис = ", checkPosition);
@@ -865,26 +883,33 @@ option:hover,  .active{
             });
             let result = this.dataFromApi.filter(x => x.office_id == officeID);
             
-            this.changePinOnMap(officeID);
+            let newCenter = this.changePinOnMap(officeID);
+            this.myMap.setCenter(newCenter);
+            this.myMap.setZoom(12);
             this.parseCurrencies(result);
     }
     
     CurrensyData.prototype.changePinOnMap = function(officeID) {
         //  Меняем пин на активный
-        const highlightedPinImage = '/img/icons/pin-1.png';
+        const highlightedPinImage = '/img/icons/orangePin.svg';
         const defaultPinImage = '/img/marker.png';
+        let newCenter = [];
         for (var i = 0; i < this.myCollection.getLength(); i++) {
             var geoObject = this.myCollection.get(i);
             if (geoObject instanceof ymaps.Placemark) {
+                
                 if (geoObject.properties.get('id') == officeID) {
                     console.log("Поменяли");
                     this.myCollection.get(i).options.set('iconImageHref', highlightedPinImage);
+                    newCenter = this.myCollection.get(i).geometry.getCoordinates();
+                    console.log(this.myCollection.get(i).geometry.getCoordinates());
                 } else {
                     this.myCollection.get(i).options.set('iconImageHref', defaultPinImage);
                 }
 //                  console.log("меняем пин на активный", geoObject.options.get('iconImageHref'));
             }
         }
+        return newCenter;
     }
         
     CurrensyData.prototype.settingsOnClickOffices = function() {
@@ -918,25 +943,38 @@ option:hover,  .active{
                 };
             }
         }
-        fieldLink.oninput = function() {
-                let currentFocus = -1;
-                let text = fieldLink.value.toUpperCase();
-                for (let option of dataLink.options) {
-                    if(option.value.toUpperCase().indexOf(text) > -1) {
-                        option.style.display = "block";
-                    } else {
-                        option.style.display = "none";
-                    }
-                };
+        
+        fieldLink.oninput = function(e) {
+            if (e.key === "ArrowDown") {
+                console.log("Нажалась кнопка вниз!!!");
             }
-
-            fieldLink.onblur = function (event) {
-                dataLink.style.display = 'none';
-                fieldLink.style.borderRadius = "6px 6px 6px 6px";  
-                for (let option of dataLink.options) {
+            
+            let currentFocus = -1;
+            let text = fieldLink.value.toUpperCase();
+            for (let option of dataLink.options) {
+                if(option.value.toUpperCase().indexOf(text) > -1) {
                     option.style.display = "block";
-                };
+                } else {
+                    option.style.display = "none";
+                }
             };
+         }
+
+        fieldLink.onblur = function (event) {
+            dataLink.style.display = 'none';
+            fieldLink.style.borderRadius = "6px 6px 6px 6px";  
+            for (let option of dataLink.options) {
+                option.style.display = "block";
+            };
+        }
+        
+//        fieldLink.onkeypress = function (e) {
+//            e = e || window.event;
+//            if (e.key === "ArrowDown") {
+//                console.log("Нажалась кнопка вниз!!!");
+//            }
+//            console.log("Нажалась кнопка вниз!!!");
+//        }
     }
         
     CurrensyData.prototype.settingsOnClickCities = function() {
@@ -1203,7 +1241,7 @@ option:hover,  .active{
                 allPhotosField.forEach((ht, ind) => {
                     ht.classList.toggle("change-option-active");
                 });
-                mapWrap.classList.toggle("map-visibility-1");
+                mapWrap.classList.toggle("map-visibility-new");
                 mapElem.classList.toggle("map-Yandex-Exact-dsp");
             }
         });
