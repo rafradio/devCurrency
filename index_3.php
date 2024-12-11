@@ -855,7 +855,13 @@ option:hover,  .active{
             }
         }
         });
-        console.log("Проверяем словарь = ", this.allDictCityOffices.size);
+        let sortedDict = new Map();
+        
+        this.allDictCityOffices.forEach((value, key) => {
+            value.sort((a, b) => a[0].localeCompare(b[0]));
+            this.allDictCityOffices.set(key, value);
+        });
+        console.log("Проверяем словарь всех = ", this.allDictCityOffices);
         return this.allDictCityOffices;
     }
     
@@ -889,6 +895,11 @@ option:hover,  .active{
 
             }
         }
+        });
+        
+        this.dictCityOffices.forEach((value, key) => {
+            value.sort((a, b) => a[0].localeCompare(b[0]));
+            this.dictCityOffices.set(key, value);
         });
 
         console.log("Кол-во офисов в горое = ", listOfCities.length, listOfCities[5], this.dictCityOffices.get(listOfCities[5]));
