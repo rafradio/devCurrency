@@ -594,7 +594,7 @@ option:hover,  .active{
                     });
                     document.querySelectorAll(".db")[1].value = label;
                 });
-                placemark.properties.set('hintContent', label);
+//                placemark.properties.set('hintContent', label);
 //                placemark.properties.set('hintLayout', HintLayout);
                 self.myCollection.add(placemark);
 
@@ -704,7 +704,7 @@ option:hover,  .active{
                     });
                     document.querySelectorAll(".db")[1].value = label;
                 });
-                placemark.properties.set('hintContent', label);
+//                placemark.properties.set('hintContent', label);
 //                placemark.properties.set('hintLayout', HintLayout);
                 self.myCollection.add(placemark);
 
@@ -1126,12 +1126,29 @@ option:hover,  .active{
             
             this.firstInput.oninput = () => {
                 let str = this.firstInput.value;
-                this.firstInput.value = str.charAt(0) == "0" ? str.substr(1) : str;
+                console.log("проверяем калькулятор = ", str);
+                let val = parseFloat(str);
+                
+                if (str.substr(0,4) == "0.00") {
+                    val = str.substr(4);
+                } else {
+                    val = str.charAt(0) == "0" ? str.substr(1): str;
+                } 
+                this.firstInput.value = val;
+
             }
             
             this.secondInput.oninput = () => {
-                let str = this.firstInput.value;
-                this.secondInput.value = str.charAt(0) == "0" ? str.substr(1) : str;
+                let str = this.secondInput.value;
+                let val = parseFloat(str);
+                if (str.substr(0,4) == "0.00") {
+                    val = str.substr(4);
+                } else {
+                    val = str.charAt(0) == "0" ? str.substr(1): str;
+                } 
+                
+                this.secondInput.value = val;
+
             }
 
             // Выбираем первый и второй элемент массива, если они существуют
