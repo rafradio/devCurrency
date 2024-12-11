@@ -341,6 +341,23 @@ option:hover,  .active{
     width: 25px;
     height: 25px;
 }
+.my-hint {
+    display: inline-block;
+    padding: 5px;
+    height: auto;
+    position: relative;
+    left: -10px;
+    min-width: 195px;
+    font-size: 10px;
+    line-height: 17px;
+    color: #272727;
+    text-align: center;
+    /* vertical-align: middle; */
+    background-color: #ffffff;
+    border: 0.2px solid #616161;
+    box-shadow: 2px 4px 7px #a4a4a4;
+}
+
 </style>
 <script src="https://api-maps.yandex.ru/2.1/?apikey=a0a0b5ec-c142-4ea8-b8e6-ae69a5859bef&lang=ru_RU&load=package.full"></script>
 <div class="rectangle_1">
@@ -516,7 +533,31 @@ option:hover,  .active{
             cityOffices.forEach(item => {
                 let [label, id, latitude, longitude] = item;
                 const coordinates = [latitude, longitude];
-
+               
+                let HintLayout = ymaps.templateLayoutFactory.createClass( "<div class='my-hint'>" +
+                    "<b>{{ properties.name }}</b>" +
+                    "</div>", {
+                        getShape: function () {
+                            var el = this.getElement(),
+                                result = null;
+                            if (el) {
+                                var firstChild = el.firstChild;
+                                const rect = document.getElementById("map").getBoundingClientRect();
+//                                console.log(window.screen.width - 600 + firstChild.offsetWidth);
+                                let leftOffWidth = window.innerWidth - rect.left.toFixed() - rect.width + firstChild.offsetWidth;
+                                let bottomOffWidth = window.innerHeight - rect.top.toFixed() - rect.height + firstChild.offsetHeight;
+                                result = new ymaps.shape.Rectangle(
+                                    new ymaps.geometry.pixel.Rectangle([
+                                        [0, 0],
+                                        [leftOffWidth, bottomOffWidth]
+                                    ])
+                                );
+                            }
+                            return result;
+                        }
+                    }
+                );
+        
                 const placemark = new ymaps.Placemark(coordinates, {
                     id: id,
                     name: label
@@ -525,7 +566,7 @@ option:hover,  .active{
                     iconImageHref: defaultPinImage,
                     iconImageSize: [37, 43],
                     iconImageOffset: [-18, -42],
-                    balloonContentHeader: "Балун метки",
+                    hintLayout: HintLayout
                 });
                 
                 placemark.events.add('click', async function(evt) {
@@ -553,8 +594,8 @@ option:hover,  .active{
                     });
                     document.querySelectorAll(".db")[1].value = label;
                 });
-//                placemark.properties.set('hintContent', 'Hello world');
-                placemark.options.set('hintContent', label);
+                placemark.properties.set('hintContent', label);
+//                placemark.properties.set('hintLayout', HintLayout);
                 self.myCollection.add(placemark);
 
             });
@@ -599,17 +640,39 @@ option:hover,  .active{
                 let [label, id, latitude, longitude] = item;
                 const coordinates = [latitude, longitude];
 
+                let HintLayout = ymaps.templateLayoutFactory.createClass( "<div class='my-hint'>" +
+                    "<b>{{ properties.name }}</b>" +
+                    "</div>", {
+                        getShape: function () {
+                            var el = this.getElement(),
+                                result = null;
+                            if (el) {
+                                var firstChild = el.firstChild;
+                                const rect = document.getElementById("map").getBoundingClientRect();
+//                                console.log(window.screen.width - 600 + firstChild.offsetWidth);
+                                let leftOffWidth = window.innerWidth - rect.left.toFixed() - rect.width + firstChild.offsetWidth;
+                                let bottomOffWidth = window.innerHeight - rect.top.toFixed() - rect.height + firstChild.offsetHeight;
+                                result = new ymaps.shape.Rectangle(
+                                    new ymaps.geometry.pixel.Rectangle([
+                                        [0, 0],
+                                        [leftOffWidth, bottomOffWidth]
+                                    ])
+                                );
+                            }
+                            return result;
+                        }
+                    }
+                );
+
                 const placemark = new ymaps.Placemark(coordinates, {
                     id: id,
                     name: label
                 }, {
-                    balloonContentHeader: "Балун метки",
                     iconLayout: 'default#image',
                     iconImageHref: defaultPinImage,
                     iconImageSize: [37, 43],
                     iconImageOffset: [-18, -42],
-                    hintContent: "Хинт метки"
-                    
+                    hintLayout: HintLayout
                 });
                 
                 placemark.events.add('click', async function(evt) {
@@ -642,6 +705,7 @@ option:hover,  .active{
                     document.querySelectorAll(".db")[1].value = label;
                 });
                 placemark.properties.set('hintContent', label);
+//                placemark.properties.set('hintLayout', HintLayout);
                 self.myCollection.add(placemark);
 
             });
@@ -696,7 +760,7 @@ option:hover,  .active{
                 clone.classList.remove("first-currency-none");
                 clone.classList.add("first-currency-show");
                 clone.classList.add("first-currency-show-nal");
-                let pathToIcon = "https://dev.avangard.ru/img/icons/flags/" + flag[0].icon;
+                let pathToIcon = el.currency_from == "RUR" ? "https://dev.avangard.ru/img/icons/flags/" + flag[0].icon : "https://dev.avangard.ru/img/icons/cross-rate.svg";
                 let labelCur = el.currency_from == "RUR" ? el.currency_to : el.currency_to + " / " + el.currency_from;
                 clone.children[0].innerHTML = '<img class="flag-src" src="' + pathToIcon + '" alt="" srcset=""><span class="flag-name">' +  labelCur + '</span>';
     //            clone.children[0].innerHTML = el.currency_to;
