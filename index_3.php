@@ -176,11 +176,13 @@ option:hover,  .active{
     font-size: 12px;
     height: 22px;
     width: 165px;
+    background: url('https://dev.avangard.ru/img/icons/bg-tab-map.png') no-repeat right top;
     transform: translateY(45%);
 }
 .controller-item-last {
     justify-content: flex-end !important;
     align-items: flex-end;
+    
 }
 .change-option {
     display: flex;
@@ -344,8 +346,8 @@ option:hover,  .active{
 <div class="rectangle_1">
         <h1 class="like-h1">Обмен валют</h1>
         <p> 
-            Для вас доступен спектр услуг по обмену валют, который гарантирует комфорт и безопасность ваших финансовых операций. 
-            Обменять валюту можно как за наличные, так и безналичным способом через наш сайт или мобильное приложение. 
+            Банк Авангард гибко подходит к установке курсов иностранных валют. Обменять валюту можно как за наличные, так и безналичным способом  
+            через интернет-банк или мобильное приложение. Обменные операции проводятся во всех офисах банка. 
         </p>
 </div>
 
@@ -355,7 +357,7 @@ option:hover,  .active{
 
             <?php
             date_default_timezone_set('Europe/Moscow');
-            echo date('H:i, d:m:Y', strtotime('now'));
+            echo date('H:i, d.m.Y', strtotime('now'));
             ?></p>
     <div class="controller-block">
         <div class="controller-item">
@@ -431,7 +433,7 @@ option:hover,  .active{
 
             <?php
             date_default_timezone_set('Europe/Moscow');
-            echo date('H:i, d:m:Y', strtotime('now'));
+            echo date('H:i, d.m.Y', strtotime('now'));
             ?>
         </p>
         <div class='currency-list-block'>
@@ -563,7 +565,7 @@ option:hover,  .active{
             
 
             self.myMap.setBounds(self.myCollection.getBounds());
-            self.myMap.setZoom(7);
+            self.myMap.setZoom(12);
             
                 
 //                self.myMap.zoomRange.get(self.myMap.getCenter()).then(zoomRange => {
@@ -647,6 +649,7 @@ option:hover,  .active{
         self.myMap.geoObjects.add(self.myCollection);
         console.log("Координаты яндекса длина = ", this.myMap.geoObjects.getLength());
         this.myMap.setCenter(data);
+        this.myMap.setZoom(12);
         self.changePinOnMap(self.closestOfficeData.office_id);
     }
     
@@ -1056,6 +1059,16 @@ option:hover,  .active{
 
             this.firstInput.value = 0;
             this.secondInput.value = 0;
+            
+            this.firstInput.oninput = () => {
+                let str = this.firstInput.value;
+                this.firstInput.value = str.charAt(0) == "0" ? str.substr(1) : str;
+            }
+            
+            this.secondInput.oninput = () => {
+                let str = this.firstInput.value;
+                this.secondInput.value = str.charAt(0) == "0" ? str.substr(1) : str;
+            }
 
             // Выбираем первый и второй элемент массива, если они существуют
             const firstSelectValue = this.ratesInSelect[0]?.currency_to || 'RUR';
