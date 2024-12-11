@@ -814,9 +814,9 @@ option:hover,  .active{
                 this.parseCurrencies(result);
                 this.changeCitiesOffices(closestOffice);
                 document.querySelectorAll(".db")[0].value = closestOffice.city;
-                document.querySelectorAll(".db")[1].value = closestOffice.label;
+                document.querySelectorAll(".db")[1].value = closestOffice.label_web;
                 this.createListnersCities(closestOffice.city);
-                document.querySelectorAll(".db")[1].value = closestOffice.label;
+                document.querySelectorAll(".db")[1].value = closestOffice.label_web;
 //                this.changePinOnMap(closestOffice.id);
             }
             catch(error) {
@@ -828,14 +828,14 @@ option:hover,  .active{
     CurrensyData.prototype.createAllDictioneryOffices = function() {
         let listOfCities = [...new Set(Array.from(this.dataFromApi, x => x.city))];
         listOfCities = listOfCities.filter(x => x != null);
-        let listOfOffices = [...new Set(Array.from(this.dataFromApi, x => x.label))];
+        let listOfOffices = [...new Set(Array.from(this.dataFromApi, x => x.label_web))];
 
         this.dataFromApi.forEach((elm, ind) => {
             if (elm.city != null) {
             if (!(this.allDictCityOffices.has(elm.city))) {
 
                 let arr = [];
-                arr.push([elm.label, elm.office_id, elm.latitude, elm.longitude]);
+                arr.push([elm.label_web, elm.office_id, elm.latitude, elm.longitude]);
                 this.allDictCityOffices.set(elm.city, arr);
 //                if (elm.city == 'Владивосток') console.log("Владивосток", this.allDictCityOffices.get('Владивосток'));
             } else {
@@ -848,7 +848,7 @@ option:hover,  .active{
                 });
 
                 if (!(arr1.includes(elm.office_id))) {
-                    arr.push([elm.label, elm.office_id, elm.latitude, elm.longitude]);
+                    arr.push([elm.label_web, elm.office_id, elm.latitude, elm.longitude]);
                     this.allDictCityOffices.set(elm.city, arr);
                 }
 
@@ -863,14 +863,14 @@ option:hover,  .active{
         let currentOfficesInTheCity = this.dataFromApi.filter(x => x.city == closestOffice.city);
         let listOfCities = [...new Set(Array.from(this.dataFromApi, x => x.city))];
         listOfCities = listOfCities.filter(x => x != null);
-        let listOfOffices = [...new Set(Array.from(this.dataFromApi, x => x.label))];
+        let listOfOffices = [...new Set(Array.from(this.dataFromApi, x => x.label_web))];
 
         this.dataFromApi.forEach((elm, ind) => {
             if (elm.city != null) {
             if (!(this.dictCityOffices.has(elm.city))) {
 
                 let arr = [];
-                arr.push([elm.label, elm.office_id, elm.latitude, elm.longitude]);
+                arr.push([elm.label_web, elm.office_id, elm.latitude, elm.longitude]);
                 this.dictCityOffices.set(elm.city, arr);
 //                if (elm.city == 'Владивосток') console.log("Владивосток", this.dictCityOffices.get('Владивосток'));
             } else {
@@ -883,7 +883,7 @@ option:hover,  .active{
                 });
 
                 if (!(arr1.includes(elm.office_id))) {
-                    arr.push([elm.label, elm.office_id, elm.latitude, elm.longitude]);
+                    arr.push([elm.label_web, elm.office_id, elm.latitude, elm.longitude]);
                     this.dictCityOffices.set(elm.city, arr);
                 }
 
