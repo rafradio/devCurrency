@@ -359,7 +359,7 @@ option:hover,  .active{
 }
 
 </style>
-<script src="https://api-maps.yandex.ru/2.1/?apikey=a0a0b5ec-c142-4ea8-b8e6-ae69a5859bef&lang=ru_RU&load=package.full"></script>
+<script src="https://api-maps.yandex.ru/2.1/?apikey=a0a0b5ec-c142-4ea8-b8e6-ae69a5859bef&lang=ru_RU"></script>
 <div class="rectangle_1">
         <h1 class="like-h1">Обмен валют</h1>
         <p> 
@@ -718,7 +718,13 @@ option:hover,  .active{
     }
     
     CurrensyData.prototype.parseCurrencies = function(result) {
-        
+//        let currencyBlock = document.querySelectorAll(".first-currency-show-nal");
+//        console.log("from options this = ", officeID );
+//        currencyBlock.forEach((elm, ind) => {
+//            if (ind != 0) {
+//                elm.remove();
+//            }
+//        });
         let parentCurrency  = document.querySelectorAll('.currency-list-block')[0];
         let childCurrency = document.getElementById("example-curr");
         
@@ -815,7 +821,7 @@ option:hover,  .active{
                 this.changeCitiesOffices(closestOffice);
                 document.querySelectorAll(".db")[0].value = closestOffice.city;
                 document.querySelectorAll(".db")[1].value = closestOffice.label_web;
-                this.createListnersCities(closestOffice.city);
+                this.createListnersCities(closestOffice.city, "map");
                 document.querySelectorAll(".db")[1].value = closestOffice.label_web;
 //                this.changePinOnMap(closestOffice.id);
             }
@@ -927,11 +933,25 @@ option:hover,  .active{
         this.settingsOnClickCities();
     }
         
-    CurrensyData.prototype.createListnersCities = function(city) {
+    CurrensyData.prototype.createListnersCities = function(city, from) {
         console.log("Проверяем слушатель событий Города");
             let citiesDataLink = document.querySelectorAll(".db-datalist")[1];
             let arr = this.dictCityOffices.get(city);
             let arr1 = Array.from(arr, x => [x[0], x[1]]);
+            
+            const exclud = (x) => {
+                let excludeOfficess = ["аэ", "авангард-экспресс", "экспресс"];
+                let text = x[0].toLowerCase();
+                let flag = true;
+                excludeOfficess.forEach((el, ind) => {
+                    if (text.includes(el)) {flag = false;};
+                });
+                return flag;
+            }
+            let arr2 = arr.filter(exclud);
+            if (arr2.length == 0) {
+                arr2 = arr;
+            }
 
             let options = citiesDataLink.children;
             var i, L = options.length - 1;
@@ -945,9 +965,22 @@ option:hover,  .active{
                 option.dataset.officeid = el[1];
                 citiesDataLink.appendChild(option);
             });
-
-            document.querySelectorAll(".db")[1].value = "";
+            let id = (city == "Москва") ? 5 : arr2[0][1];
+            let result = this.dataFromApi.filter(x => x.office_id == id);
+            document.querySelectorAll(".db")[1].value = arr2[0][0];
+            if (city == "Москва") {document.querySelectorAll(".db")[1].value = '"Центральный"';};
             this.settingsOnClickOffices();
+            if (from == "tab") {
+                let currencyBlock = document.querySelectorAll(".first-currency-show-nal");
+//                console.log("from options this = ", officeID );
+                currencyBlock.forEach((elm, ind) => {
+                    if (ind != 0) {
+                        elm.remove();
+                    }
+                });
+                this.parseCurrencies(result);
+            }
+            
             this.ymapsNewDraw(city);
     }
         
@@ -1078,7 +1111,7 @@ option:hover,  .active{
                 fieldLink.value = option.value;
                 dataLink.style.display = 'none';
                 fieldLink.style.borderRadius = "6px";
-                self.createListnersCities(option.value);
+                self.createListnersCities(option.value, "tab");
                 fieldLink.blur();
                 for (let option of dataLink.options) {
                     option.style.display = "block";
