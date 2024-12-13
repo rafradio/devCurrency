@@ -380,8 +380,7 @@ option:disabled:hover {
 <div class="rectangle_1">
         <h1 class="like-h1">Обмен валют</h1>
         <p> 
-            Банк Авангард гибко подходит к установке курсов иностранных валют. Обменять валюту можно как за наличные, так и безналичным способом  
-            через интернет-банк или мобильное приложение. Обменные операции проводятся во всех офисах банка. 
+            Банк Авангард гибко подходит к установке курсов иностранных валют. Обменные операции проводятся во всех офисах банка.
         </p>
 </div>
 
@@ -798,7 +797,7 @@ option:disabled:hover {
                 clone.classList.add("first-currency-show-nal");
                 let pathToIcon = el.currency_from == "RUR" ? "https://dev.avangard.ru/img/icons/flags/" + flag[0].icon : "https://dev.avangard.ru/img/icons/cross-rate.svg";
                 let labelCur = el.currency_from == "RUR" ? el.currency_to : el.currency_to + " / " + el.currency_from;
-                let labelname = el.currency_from == "RUR" ? flag[0].label : flag[0].label + " / Доллар США";
+                let labelname = el.currency_from == "RUR" ? flag[0].label : flag[0].label + " / доллар США";
                 clone.children[0].innerHTML = '<img class="flag-src" src="' + pathToIcon + '" alt="" srcset=""><span class="flag-name">' +  labelCur + '</span>';
                 clone.children[1].innerHTML = '<span class="flag-name">' +  labelname + '</span>';
     //            clone.children[0].innerHTML = el.currency_to;
@@ -857,9 +856,9 @@ option:disabled:hover {
                 this.parseCurrencies(result);
                 this.changeCitiesOffices(closestOffice);
                 document.querySelectorAll(".db")[0].value = closestOffice.city;
-                document.querySelectorAll(".db")[1].value = closestOffice.label_web;
+                document.querySelectorAll(".db")[1].value = closestOffice.label_web.replace("ДО ", '');
                 this.createListnersCities(closestOffice.city, "map");
-                document.querySelectorAll(".db")[1].value = closestOffice.label_web;
+                document.querySelectorAll(".db")[1].value = closestOffice.label_web.replace("ДО ", '');
 //                this.changePinOnMap(closestOffice.id);
 //            }
 //            catch(error) {
@@ -904,9 +903,9 @@ option:disabled:hover {
                 this.parseCurrencies(result);
                 this.changeCitiesOffices(closestOffice);
                 document.querySelectorAll(".db")[0].value = closestOffice.city;
-                document.querySelectorAll(".db")[1].value = closestOffice.label_web;
+                document.querySelectorAll(".db")[1].value = closestOffice.label_web.replace("ДО ", '');
                 this.createListnersCities(closestOffice.city, "map");
-                document.querySelectorAll(".db")[1].value = closestOffice.label_web;
+                document.querySelectorAll(".db")[1].value = closestOffice.label_web.replace("ДО ", '');
 //                this.changePinOnMap(closestOffice.id);
             }
             catch(error) {
@@ -1038,64 +1037,65 @@ option:disabled:hover {
         
     CurrensyData.prototype.createListnersCities = function(city, from) {
         console.log("Проверяем слушатель событий Города");
-            let citiesDataLink = document.querySelectorAll(".db-datalist")[1];
-            let arr = this.dictCityOffices.get(city);
-            let arr1 = Array.from(arr, x => [x[0], x[1], x[4]]);
-            
-            const exclud = (x) => {
-                let excludeOfficess = ["аэ", "авангард-экспресс", "экспресс"];
-                let text = x[0].toLowerCase();
-                let flag = true;
-                excludeOfficess.forEach((el, ind) => {
-                    if (text.includes(el)) {flag = false;};
-                });
-                return flag;
-            }
-            let arr2 = arr.filter(exclud);
-            if (arr2.length == 0) {
-                arr2 = arr;
-            }
+        let citiesDataLink = document.querySelectorAll(".db-datalist")[1];
+        let arr = this.dictCityOffices.get(city);
+        let arr1 = Array.from(arr, x => [x[0], x[1], x[4]]);
 
-            let options = citiesDataLink.children;
-            var i, L = options.length - 1;
-            for(i = L; i >= 0; i--) {
-               options[i].remove();
-            }
-            arr1.forEach((el, ind) => {
-                let option = document.createElement('option');
-//                option.value = el[0] + " г. Москва, ул. Большая Якиманка, д. 1";
-//                option.text = el[0] + " г. Москва, ул. Большая Якиманка, д. 1";
-                option.value = el[0] + " " + el[2];
-                option.text = el[0] + " " + el[2];
-                option.dataset.officeid = el[1];
-                option.dataset.address = "No";
-                citiesDataLink.appendChild(option);
-                
+        const exclud = (x) => {
+            let excludeOfficess = ["аэ", "авангард-экспресс", "экспресс"];
+            let text = x[0].toLowerCase();
+            let flag = true;
+            excludeOfficess.forEach((el, ind) => {
+                if (text.includes(el)) {flag = false;};
+            });
+            return flag;
+        }
+        let arr2 = arr.filter(exclud);
+        if (arr2.length == 0) {
+            arr2 = arr;
+        }
+
+        let options = citiesDataLink.children;
+        var i, L = options.length - 1;
+        for(i = L; i >= 0; i--) {
+           options[i].remove();
+        }
+        arr1.forEach((el, ind) => {
+            let option = document.createElement('option');
+            let charts = "г. " + city + ",";
+            let addr = el[2].replace(charts, '');
+            let nameL = el[0].replace("ДО ", '');
+            option.value = nameL + " " + addr;
+            option.text = nameL + " " + addr;
+            option.dataset.officeid = el[1];
+            option.dataset.address = "No";
+            citiesDataLink.appendChild(option);
+
 //                let optionAddress = document.createElement('option');
 //                optionAddress.value = " Адрес";
 //                optionAddress.text = " Адрес  произволный";
 //                optionAddress.dataset.address = "Address";
 //                optionAddress.setAttribute("disabled", "");
 //                citiesDataLink.appendChild(optionAddress);
-            });
+        });
             
-            let id = (city == "Москва") ? 5 : arr2[0][1];
-            let result = this.dataFromApi.filter(x => x.office_id == id);
-            document.querySelectorAll(".db")[1].value = arr2[0][0];
-            if (city == "Москва") {document.querySelectorAll(".db")[1].value = '"Центральный"';};
-            this.settingsOnClickOffices();
-            if (from == "tab") {
-                let currencyBlock = document.querySelectorAll(".first-currency-show-nal");
+        let id = (city == "Москва") ? 5 : arr2[0][1];
+        let result = this.dataFromApi.filter(x => x.office_id == id);
+        document.querySelectorAll(".db")[1].value = arr2[0][0].replace("ДО ", '');
+        if (city == "Москва") {document.querySelectorAll(".db")[1].value = '"Центральный"';};
+        this.settingsOnClickOffices();
+        if (from == "tab") {
+            let currencyBlock = document.querySelectorAll(".first-currency-show-nal");
 //                console.log("from options this = ", officeID );
-                currencyBlock.forEach((elm, ind) => {
-                    if (ind != 0) {
-                        elm.remove();
-                    }
-                });
-                this.parseCurrencies(result);
-            }
-            
-            this.ymapsNewDraw(city);
+            currencyBlock.forEach((elm, ind) => {
+                if (ind != 0) {
+                    elm.remove();
+                }
+            });
+            this.parseCurrencies(result);
+        }
+
+        this.ymapsNewDraw(city);
     }
         
     CurrensyData.prototype.createListnersOffice = function(office, officeID) {
