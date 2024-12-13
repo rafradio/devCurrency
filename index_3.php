@@ -130,6 +130,7 @@ $APPLICATION->SetTitle("Курсы валют");
     padding: 5px;
     max-height: 10rem;
     overflow-y: auto;
+    overflow-x: hidden;
     z-index: 1;
 }
 option {
@@ -139,10 +140,21 @@ option {
     margin-bottom: 1px;
     font-size: 10px;
     cursor: pointer;
+    width: 155px;
+    white-space: break-spaces;
 }
+
+/*.offices {
+    width: 355px;
+}*/
 
 option:hover,  .active{
     background-color: lightblue;
+}
+
+option:disabled:hover {
+    background-color: white !important;
+    cursor: auto !important;
 }
 .controller-block {
     display: flex;
@@ -219,7 +231,7 @@ option:hover,  .active{
 .currency-element {
     display: flex;
     position: relative;
-    width: 70%;
+    width: 100%;
     height: 25px;
     border-bottom: 0.9px solid #107340;  
     flex-direction: row;
@@ -239,9 +251,12 @@ option:hover,  .active{
 .currency-element-block {
     display: flex;
     position: relative;
-    width: 33.3%;
+    width: 25%;
     height: 100%;
-    
+}
+.currency-element-block-name {
+    width: 60%;
+    height: 100%;
 }
 .currency-element-curr {
     align-items: center !important;
@@ -407,13 +422,15 @@ option:hover,  .active{
     <div id="map-wrap" class="map-Yandex-Size">
         <div id="map" class="map-Yandex-Exact-Size"></div>
     </div>
-    <div class='currency-list-block'>
+    <div class='currency-list-block currency-nal'>
         <div class='currency-element first-currency-show first-currency-show-nal'>
+            <div class="currency-element-block"></div>
             <div class="currency-element-block"></div>
             <div class="currency-element-block currency-element-curr">Покупка</div>
             <div class="currency-element-block currency-element-curr">Продажа</div>
         </div>
         <div id="example-curr" class='currency-element first-currency-none'>
+            <div class="currency-element-block"></div>
             <div class="currency-element-block"></div>
             <div class="currency-element-block currency-element-curr currency-element-curr-digit"></div>
             <div class="currency-element-block currency-element-curr currency-element-curr-digit"></div>
@@ -473,6 +490,7 @@ option:hover,  .active{
                             <img src="https://dev.avangard.ru/img/icons/flags/<?= $flagPath; ?>" alt="" srcset="">
                             <span class="flag-name"><?= $cashlessRateItem['currency_to']; ?></span>
                     </div>
+                    <div class="currency-element-block"><span class="flag-name"><?= $cashlessRateItem['label']; ?></span></div>
                     <div class="currency-element-block currency-element-curr currency-element-curr-digit"><?= roundNumber($cashlessRateItem['sum_buy']); ?></div>
                     <div class="currency-element-block currency-element-curr currency-element-curr-digit"><?= roundNumber($cashlessRateItem['sum_sale']); ?></div>
                 </div>
@@ -488,6 +506,7 @@ option:hover,  .active{
             this.closestOfficeData = [];
             this.dictCityOffices = new Map();
             this.allDictCityOffices = new Map();
+            this.myCollection;
             this.requestToApiFirst(["55.741206", "37.614267"]);
             this.ymapsInit();         
             this.settingsOnClickCities();
@@ -759,7 +778,14 @@ option:hover,  .active{
         
         
         sortedResult.forEach((el, ind) => {
+            let flag = false;
             if (parseFloat(el.sum_sale) != 0 || parseFloat(el.sum_buy) != 0) {
+                if (el.currency_from == "RUR" || el.currency_to == "EUR") {
+                    flag = true;
+                }
+                
+            }
+            if (flag) {
                 let clone = childCurrency.cloneNode(true);
                 let flag = this.flagsFromApi.filter(x => x.code_iso_alph == el.currency_to);
     //            console.log("Отрисовка флапгов = ", flag[0].icon);
@@ -769,13 +795,15 @@ option:hover,  .active{
                 clone.classList.add("first-currency-show-nal");
                 let pathToIcon = el.currency_from == "RUR" ? "https://dev.avangard.ru/img/icons/flags/" + flag[0].icon : "https://dev.avangard.ru/img/icons/cross-rate.svg";
                 let labelCur = el.currency_from == "RUR" ? el.currency_to : el.currency_to + " / " + el.currency_from;
+                let labelname = el.currency_from == "RUR" ? flag[0].label : flag[0].label + " / Доллар США";
                 clone.children[0].innerHTML = '<img class="flag-src" src="' + pathToIcon + '" alt="" srcset=""><span class="flag-name">' +  labelCur + '</span>';
+                clone.children[1].innerHTML = '<span class="flag-name">' +  labelname + '</span>';
     //            clone.children[0].innerHTML = el.currency_to;
                 let strV = el.sum_buy.substring(el.sum_buy.length -2 ,el.sum_buy.length) == "00" ? el.sum_buy.substring(0, el.sum_buy.length -2) : el.sum_buy;
-                clone.children[1].innerHTML = strV;
+                clone.children[2].innerHTML = strV;
                 console.log("проверка нулей = ", el.sum_buy.substring(el.sum_buy.length -2 ,el.sum_buy.length)=="00");
                 strV = el.sum_sale.substring(el.sum_sale.length -2 ,el.sum_sale.length) == "00" ? el.sum_sale.substring(0, el.sum_sale.length -2) : el.sum_sale;
-                clone.children[2].innerHTML = strV;
+                clone.children[3].innerHTML = strV;
                 parentCurrency.appendChild(clone);
             }
         });
@@ -974,12 +1002,29 @@ option:hover,  .active{
             for(i = L; i >= 0; i--) {
                options[i].remove();
             }
-            dataList.forEach((el, ind) => {
-                let option = document.createElement('option');
-                option.value = el;
-                option.text = el;
-                citiesDataLink.appendChild(option);
-            });
+            if (id == 1) {
+                dataList.forEach((el, ind) => {
+                    let option = document.createElement('option');
+                    option.value = el + " Адрес";
+                    option.text = el + " Адрес";
+                    citiesDataLink.appendChild(option);
+                    
+//                    let optionAddress = document.createElement('option');
+//                    optionAddress.value = el + " Адрес";
+//                    optionAddress.text = el + " Адрес";
+////                    optionAddress.disabled = true;
+//                    citiesDataLink.appendChild(optionAddress);
+//                    console.log("Вставка адреса = ", optionAddress);
+                });
+            } else {
+                dataList.forEach((el, ind) => {
+                    let option = document.createElement('option');
+                    option.value = el;
+                    option.text = el;
+                    citiesDataLink.appendChild(option);
+                });
+            }
+            
         }
         change(0, listOfCities);
         change(1, listOfOffices);
@@ -1015,11 +1060,20 @@ option:hover,  .active{
             }
             arr1.forEach((el, ind) => {
                 let option = document.createElement('option');
-                option.value = el[0];
-                option.text = el[0];
+                option.value = el[0] + " г. Москва, ул. Большая Якиманка, д. 1";
+                option.text = el[0] + " г. Москва, ул. Большая Якиманка, д. 1";;
                 option.dataset.officeid = el[1];
+                option.dataset.address = "No";
                 citiesDataLink.appendChild(option);
+                
+//                let optionAddress = document.createElement('option');
+//                optionAddress.value = " Адрес";
+//                optionAddress.text = " Адрес  произволный";
+//                optionAddress.dataset.address = "Address";
+//                optionAddress.setAttribute("disabled", "");
+//                citiesDataLink.appendChild(optionAddress);
             });
+            
             let id = (city == "Москва") ? 5 : arr2[0][1];
             let result = this.dataFromApi.filter(x => x.office_id == id);
             document.querySelectorAll(".db")[1].value = arr2[0][0];
@@ -1060,21 +1114,24 @@ option:hover,  .active{
         const highlightedPinImage = '/img/icons/orangePin.svg';
         const defaultPinImage = '/img/marker.png';
         let newCenter = [];
-        for (var i = 0; i < this.myCollection.getLength(); i++) {
-            var geoObject = this.myCollection.get(i);
-            if (geoObject instanceof ymaps.Placemark) {
-                
-                if (geoObject.properties.get('id') == officeID) {
-                    console.log("Поменяли");
-                    this.myCollection.get(i).options.set('iconImageHref', highlightedPinImage);
-                    newCenter = this.myCollection.get(i).geometry.getCoordinates();
-                    console.log(this.myCollection.get(i).geometry.getCoordinates());
-                } else {
-                    this.myCollection.get(i).options.set('iconImageHref', defaultPinImage);
+        if (this.myCollection) {
+            for (var i = 0; i < this.myCollection.getLength(); i++) {
+                var geoObject = this.myCollection.get(i);
+                if (geoObject instanceof ymaps.Placemark) {
+
+                    if (geoObject.properties.get('id') == officeID) {
+                        console.log("Поменяли");
+                        this.myCollection.get(i).options.set('iconImageHref', highlightedPinImage);
+                        newCenter = this.myCollection.get(i).geometry.getCoordinates();
+                        console.log(this.myCollection.get(i).geometry.getCoordinates());
+                    } else {
+                        this.myCollection.get(i).options.set('iconImageHref', defaultPinImage);
+                    }
+    //                  console.log("меняем пин на активный", geoObject.options.get('iconImageHref'));
                 }
-//                  console.log("меняем пин на активный", geoObject.options.get('iconImageHref'));
             }
         }
+        
         return newCenter;
     }
         
@@ -1087,6 +1144,7 @@ option:hover,  .active{
         fieldLink.onfocus = function () {
                 dataLink.style.display = 'block';
                 fieldLink.style.borderRadius = "6px 6px 0 0";  
+                fieldLink.select();
         };
 
         for (let option of dataLink.options) {
@@ -1097,17 +1155,20 @@ option:hover,  .active{
 
         for (let option of dataLink.options) {
 //            console.log("Проверяем новую клики офисов = ", option);
-            option.onclick = function () {
+            if (option.dataset.address != "Address") {
+                option.onclick = function () {
 //                console.log("Проверяем новую клики офисов = ", option.value);
-                fieldLink.value = option.value;
-                dataLink.style.display = 'none';
-                fieldLink.style.borderRadius = "6px";
-                self.createListnersOffice(option.value, option.dataset.officeid);
-                fieldLink.blur();
-                for (let option of dataLink.options) {
-                    option.style.display = "block";
-                };
+                    fieldLink.value = option.value;
+                    dataLink.style.display = 'none';
+                    fieldLink.style.borderRadius = "6px";
+                    self.createListnersOffice(option.value, option.dataset.officeid);
+                    fieldLink.blur();
+                    for (let option of dataLink.options) {
+                        option.style.display = "block";
+                    };
+                }
             }
+            
         }
         
         fieldLink.oninput = function(e) {
@@ -1196,170 +1257,170 @@ option:hover,  .active{
     }
     
     class Converter {
-    ratesInSelect = [];
+        ratesInSelect = [];
 
-    constructor(firstSelect, secondSelect, firstInput, secondInput, crossCourseButton) {
-        this.firstSelect = firstSelect;
-        this.secondSelect = secondSelect;
-        this.firstInput = firstInput;
-        this.secondInput = secondInput;
-        this.crossCourseButton = crossCourseButton;
+        constructor(firstSelect, secondSelect, firstInput, secondInput, crossCourseButton) {
+            this.firstSelect = firstSelect;
+            this.secondSelect = secondSelect;
+            this.firstInput = firstInput;
+            this.secondInput = secondInput;
+            this.crossCourseButton = crossCourseButton;
 
-        // Слушатели событий на инпуты
-        this.firstInput.addEventListener("input", (evt) => this.#calculateExchange(evt, this.secondInput, this.firstSelect, this.secondSelect));
-        this.secondInput.addEventListener("input", (evt) => this.#calculateExchange(evt, this.firstInput, this.secondSelect, this.firstSelect, true));
+            // Слушатели событий на инпуты
+            this.firstInput.addEventListener("input", (evt) => this.#calculateExchange(evt, this.secondInput, this.firstSelect, this.secondSelect));
+            this.secondInput.addEventListener("input", (evt) => this.#calculateExchange(evt, this.firstInput, this.secondSelect, this.firstSelect, true));
 
-        // Слушатели событий на селекты
-        this.firstSelect.addEventListener("change", () => this.#changeCurrencyInSelect(this.firstSelect, this.secondSelect, this.firstInput, this.secondInput));
-        this.secondSelect.addEventListener("change", () => this.#changeCurrencyInSelect(this.secondSelect, this.firstSelect, this.secondInput, this.firstInput));
+            // Слушатели событий на селекты
+            this.firstSelect.addEventListener("change", () => this.#changeCurrencyInSelect(this.firstSelect, this.secondSelect, this.firstInput, this.secondInput));
+            this.secondSelect.addEventListener("change", () => this.#changeCurrencyInSelect(this.secondSelect, this.firstSelect, this.secondInput, this.firstInput));
 
-        // Слушатель на кросс кнопку
-        this.crossCourseButton.addEventListener("click", this.#handleClickByCrossButton.bind(this));
-    }
-
-    init = (rates) => {
-        this.ratesInSelect = this.#getFullRates(rates);
-
-        this.firstInput.value = 0;
-        this.secondInput.value = 0;
-
-        // Форматирует ввод в инпут
-        this.firstInput.oninput = () => {
-            this.firstInput.value = this.#formatInputValue(this.firstInput.value);
-        };
-
-        // Форматирует ввод в инпут
-        this.secondInput.oninput = () => {
-            this.secondInput.value = this.#formatInputValue(this.secondInput.value);
-        };
-
-        // Выбираем первый и второй элемент массива, если они существуют
-        const firstSelectValue = this.ratesInSelect[0]?.currency_to || 'RUR';
-        const secondSelectValue = this.ratesInSelect[1]?.currency_to || 'USD';
-
-        // Проверяем, что оба значения существуют
-        if (!firstSelectValue || !secondSelectValue) {
-            console.error("Недостаточно данных для инициализации селектов.");
-            return;
+            // Слушатель на кросс кнопку
+            this.crossCourseButton.addEventListener("click", this.#handleClickByCrossButton.bind(this));
         }
 
-        // Заполняем селекты
-        this.#populateSelect(this.firstSelect, this.ratesInSelect, firstSelectValue, secondSelectValue);
-        this.#populateSelect(this.secondSelect, this.ratesInSelect, secondSelectValue, firstSelectValue);
-    }
+        init = (rates) => {
+            this.ratesInSelect = this.#getFullRates(rates);
 
-    // Метод для форматирования ввода
-    #formatInputValue = (inputValue) => {
-        console.log("проверяем калькулятор = ", inputValue);
+            this.firstInput.value = 0;
+            this.secondInput.value = 0;
 
-        // Убираем префикс "0.00" или начальный "0", если есть
-        inputValue = inputValue.startsWith("0.00") ? inputValue.slice(4) : inputValue.replace(/^0/, '');
+            // Форматирует ввод в инпут
+            this.firstInput.oninput = () => {
+                this.firstInput.value = this.#formatInputValue(this.firstInput.value);
+            };
 
-        // Преобразуем строку в число
-        const val = parseFloat(inputValue) || 0; // Если строка пуста или некорректна, используем 0
+            // Форматирует ввод в инпут
+            this.secondInput.oninput = () => {
+                this.secondInput.value = this.#formatInputValue(this.secondInput.value);
+            };
 
-        return val;
-    };
+            // Выбираем первый и второй элемент массива, если они существуют
+            const firstSelectValue = this.ratesInSelect[0]?.currency_to || 'RUR';
+            const secondSelectValue = this.ratesInSelect[1]?.currency_to || 'USD';
 
-    #getFullRates = (rates) => {
-        console.log('Актуальные курсы', rates);
-
-        const currencyArray = [{
-            "currency_from": "RUR",
-            "currency_to": "RUR",
-            "sum_buy": "1",
-            "sum_sale": "1",
-            "icon": "826_gb.svg"
-        },
-        ...rates
-        ];
-
-        return currencyArray;
-    }
-
-    #populateSelect = (select, data, defaultOption, excludeValue) => {
-        select.innerHTML = ""; // Очищаем предыдущие опции
-
-        data.forEach((item) => {
-            if (item.currency_to !== excludeValue) {
-                const option = document.createElement("option");
-                option.value = item.currency_to;
-                option.textContent = item.currency_to;
-                option.dataset.sumBuy = item.sum_buy;
-                option.dataset.sumSale = item.sum_sale;
-                select.appendChild(option);
-            } else {
-                // console.log(`Удалил значение: ${excludeValue} в селекте `, select);
+            // Проверяем, что оба значения существуют
+            if (!firstSelectValue || !secondSelectValue) {
+                console.error("Недостаточно данных для инициализации селектов.");
+                return;
             }
-        });
 
-        select.value = defaultOption;
-    }
-
-    // Функция для расчёта кросс-курса
-    #calcConvertedAmount(firstInput, secondInput, selectedOptionFrom, selectedOptionTo, reverse) {
-        const amount = parseFloat(firstInput.value);
-        const fromRate = parseFloat(reverse ? selectedOptionFrom.dataset.sumSale : selectedOptionFrom.dataset.sumBuy);
-        const toRate = parseFloat(reverse ? selectedOptionTo.dataset.sumBuy : selectedOptionTo.dataset.sumSale);
-
-        // Кросс-курс 
-        const crossCourse = fromRate / toRate;
-        console.log(`${fromRate} / ${toRate} = ${crossCourse}`);
-
-        if (!isNaN(amount) && !isNaN(crossCourse)) {
-            // Перевод через базовую валюту (например, RUR)
-            const convertedAmount = amount * crossCourse;
-            secondInput.value = convertedAmount.toFixed(2);
-        } else {
-            secondInput.value = 0;
-        }
-    }
-
-    // Функция для расчёта обмена
-    #calculateExchange(evt, secondInput, selectFrom, selectTo, reverse = false) {
-        const target = evt.target;
-        const selectedOptionFrom = selectFrom.options[selectFrom.selectedIndex];
-        const selectedOptionTo = selectTo.options[selectTo.selectedIndex];
-
-        if (!selectedOptionFrom || !selectedOptionTo || !target.value) {
-            secondInput.value = "";
-            return;
+            // Заполняем селекты
+            this.#populateSelect(this.firstSelect, this.ratesInSelect, firstSelectValue, secondSelectValue);
+            this.#populateSelect(this.secondSelect, this.ratesInSelect, secondSelectValue, firstSelectValue);
         }
 
-        // Подсчет валют
-        this.#calcConvertedAmount(target, secondInput, selectedOptionFrom, selectedOptionTo, reverse);
+        // Метод для форматирования ввода
+        #formatInputValue = (inputValue) => {
+            console.log("проверяем калькулятор = ", inputValue);
+
+            // Убираем префикс "0.00" или начальный "0", если есть
+            inputValue = inputValue.startsWith("0.00") ? inputValue.slice(4) : inputValue.replace(/^0/, '');
+
+            // Преобразуем строку в число
+            const val = parseFloat(inputValue) || 0; // Если строка пуста или некорректна, используем 0
+
+            return val;
+        };
+
+        #getFullRates = (rates) => {
+            console.log('Актуальные курсы', rates);
+
+            const currencyArray = [{
+                "currency_from": "RUR",
+                "currency_to": "RUR",
+                "sum_buy": "1",
+                "sum_sale": "1",
+                "icon": "826_gb.svg"
+            },
+            ...rates
+            ];
+
+            return currencyArray;
+        }
+
+        #populateSelect = (select, data, defaultOption, excludeValue) => {
+            select.innerHTML = ""; // Очищаем предыдущие опции
+
+            data.forEach((item) => {
+                if (item.currency_to !== excludeValue) {
+                    const option = document.createElement("option");
+                    option.value = item.currency_to;
+                    option.textContent = item.currency_to;
+                    option.dataset.sumBuy = item.sum_buy;
+                    option.dataset.sumSale = item.sum_sale;
+                    select.appendChild(option);
+                } else {
+                    // console.log(`Удалил значение: ${excludeValue} в селекте `, select);
+                }
+            });
+
+            select.value = defaultOption;
+        }
+
+        // Функция для расчёта кросс-курса
+        #calcConvertedAmount(firstInput, secondInput, selectedOptionFrom, selectedOptionTo, reverse) {
+            const amount = parseFloat(firstInput.value);
+            const fromRate = parseFloat(reverse ? selectedOptionFrom.dataset.sumSale : selectedOptionFrom.dataset.sumBuy);
+            const toRate = parseFloat(reverse ? selectedOptionTo.dataset.sumBuy : selectedOptionTo.dataset.sumSale);
+
+            // Кросс-курс 
+            const crossCourse = fromRate / toRate;
+            console.log(`${fromRate} / ${toRate} = ${crossCourse}`);
+
+            if (!isNaN(amount) && !isNaN(crossCourse)) {
+                // Перевод через базовую валюту (например, RUR)
+                const convertedAmount = amount * crossCourse;
+                secondInput.value = convertedAmount.toFixed(2);
+            } else {
+                secondInput.value = 0;
+            }
+        }
+
+        // Функция для расчёта обмена
+        #calculateExchange(evt, secondInput, selectFrom, selectTo, reverse = false) {
+            const target = evt.target;
+            const selectedOptionFrom = selectFrom.options[selectFrom.selectedIndex];
+            const selectedOptionTo = selectTo.options[selectTo.selectedIndex];
+
+            if (!selectedOptionFrom || !selectedOptionTo || !target.value) {
+                secondInput.value = "";
+                return;
+            }
+
+            // Подсчет валют
+            this.#calcConvertedAmount(target, secondInput, selectedOptionFrom, selectedOptionTo, reverse);
+        }
+
+        #changeCurrencyInSelect(selectFrom, selectTo, inputFrom, inputTo) {
+            const selectedFrom = selectFrom.options[selectFrom.selectedIndex];
+            const selectedTo = selectTo.options[selectTo.selectedIndex];
+
+            // Заполняем первый селект, исключая выбранное значение из второго
+            this.#populateSelect(selectFrom, this.ratesInSelect, selectedFrom.value, selectedTo.value);
+
+            // Заполняем второй селект, исключая выбранное значение из первого
+            this.#populateSelect(selectTo, this.ratesInSelect, selectedTo.value, selectedFrom.value);
+
+            // Подсчет валют
+            this.#calcConvertedAmount(inputFrom, inputTo, selectedFrom, selectedTo);
+        }
+
+        #handleClickByCrossButton() {
+            const selectedFrom = this.firstSelect.options[this.firstSelect.selectedIndex];
+            const selectedTo = this.secondSelect.options[this.secondSelect.selectedIndex];
+
+            // Заполняем первый селект, исключая выбранное значение из второго
+            this.#populateSelect(this.firstSelect, this.ratesInSelect, selectedTo.value, selectedFrom.value);
+            this.#populateSelect(this.secondSelect, this.ratesInSelect, selectedFrom.value, selectedTo.value);
+
+            // После обновления селектов, читаем новые выбранные значения
+            const updatedFromOption = this.firstSelect.options[this.firstSelect.selectedIndex];
+            const updatedToOption = this.secondSelect.options[this.secondSelect.selectedIndex];
+
+            // Подсчет валют
+            this.#calcConvertedAmount(this.firstInput, this.secondInput, updatedFromOption, updatedToOption);
+        }
     }
-
-    #changeCurrencyInSelect(selectFrom, selectTo, inputFrom, inputTo) {
-        const selectedFrom = selectFrom.options[selectFrom.selectedIndex];
-        const selectedTo = selectTo.options[selectTo.selectedIndex];
-
-        // Заполняем первый селект, исключая выбранное значение из второго
-        this.#populateSelect(selectFrom, this.ratesInSelect, selectedFrom.value, selectedTo.value);
-
-        // Заполняем второй селект, исключая выбранное значение из первого
-        this.#populateSelect(selectTo, this.ratesInSelect, selectedTo.value, selectedFrom.value);
-
-        // Подсчет валют
-        this.#calcConvertedAmount(inputFrom, inputTo, selectedFrom, selectedTo);
-    }
-
-    #handleClickByCrossButton() {
-        const selectedFrom = this.firstSelect.options[this.firstSelect.selectedIndex];
-        const selectedTo = this.secondSelect.options[this.secondSelect.selectedIndex];
-
-        // Заполняем первый селект, исключая выбранное значение из второго
-        this.#populateSelect(this.firstSelect, this.ratesInSelect, selectedTo.value, selectedFrom.value);
-        this.#populateSelect(this.secondSelect, this.ratesInSelect, selectedFrom.value, selectedTo.value);
-
-        // После обновления селектов, читаем новые выбранные значения
-        const updatedFromOption = this.firstSelect.options[this.firstSelect.selectedIndex];
-        const updatedToOption = this.secondSelect.options[this.secondSelect.selectedIndex];
-
-        // Подсчет валют
-        this.#calcConvertedAmount(this.firstInput, this.secondInput, updatedFromOption, updatedToOption);
-    }
-}
     
     $(document).ready(function () {
         
