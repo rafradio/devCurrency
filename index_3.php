@@ -251,11 +251,13 @@ option:disabled:hover {
 .currency-element-block {
     display: flex;
     position: relative;
-    width: 25%;
+    width: 22%;
     height: 100%;
 }
 .currency-element-block-name {
-    width: 60%;
+    display: flex;
+    position: relative;
+    width: 34%;
     height: 100%;
 }
 .currency-element-curr {
@@ -425,13 +427,13 @@ option:disabled:hover {
     <div class='currency-list-block currency-nal'>
         <div class='currency-element first-currency-show first-currency-show-nal'>
             <div class="currency-element-block"></div>
-            <div class="currency-element-block"></div>
+            <div class="currency-element-block-name"></div>
             <div class="currency-element-block currency-element-curr">Покупка</div>
             <div class="currency-element-block currency-element-curr">Продажа</div>
         </div>
         <div id="example-curr" class='currency-element first-currency-none'>
             <div class="currency-element-block"></div>
-            <div class="currency-element-block"></div>
+            <div class="currency-element-block-name"></div>
             <div class="currency-element-block currency-element-curr currency-element-curr-digit"></div>
             <div class="currency-element-block currency-element-curr currency-element-curr-digit"></div>
         </div>
@@ -473,6 +475,7 @@ option:disabled:hover {
         <div class='currency-list-block'>
             <div class='currency-element first-currency-show currency-element-no-border'>
                 <div class="currency-element-block"></div>
+                <div class="currency-element-block-name"></div>
                 <div class="currency-element-block currency-element-curr">Покупка</div>
                 <div class="currency-element-block currency-element-curr">Продажа</div>
             </div>
@@ -490,7 +493,7 @@ option:disabled:hover {
                             <img src="https://dev.avangard.ru/img/icons/flags/<?= $flagPath; ?>" alt="" srcset="">
                             <span class="flag-name"><?= $cashlessRateItem['currency_to']; ?></span>
                     </div>
-                    <div class="currency-element-block"><span class="flag-name"><?= $cashlessRateItem['label']; ?></span></div>
+                    <div class="currency-element-block-name"><span class="flag-name"><?= $cashlessRateItem['label']; ?></span></div>
                     <div class="currency-element-block currency-element-curr currency-element-curr-digit"><?= roundNumber($cashlessRateItem['sum_buy']); ?></div>
                     <div class="currency-element-block currency-element-curr currency-element-curr-digit"><?= roundNumber($cashlessRateItem['sum_sale']); ?></div>
                 </div>
@@ -498,7 +501,7 @@ option:disabled:hover {
         </div>
 </div>
 
-<script type="text/javascript">
+<script type="text/javascript" defer>
     
     function CurrensyData(converter) {
             this.dataFromApi = [];
@@ -924,7 +927,7 @@ option:disabled:hover {
             if (!(this.allDictCityOffices.has(elm.city))) {
 
                 let arr = [];
-                arr.push([elm.label_web, elm.office_id, elm.latitude, elm.longitude]);
+                arr.push([elm.label_web, elm.office_id, elm.latitude, elm.longitude, elm.address_web_1]);
                 this.allDictCityOffices.set(elm.city, arr);
 //                if (elm.city == 'Владивосток') console.log("Владивосток", this.allDictCityOffices.get('Владивосток'));
             } else {
@@ -937,7 +940,7 @@ option:disabled:hover {
                 });
 
                 if (!(arr1.includes(elm.office_id))) {
-                    arr.push([elm.label_web, elm.office_id, elm.latitude, elm.longitude]);
+                    arr.push([elm.label_web, elm.office_id, elm.latitude, elm.longitude, elm.address_web_1]);
                     this.allDictCityOffices.set(elm.city, arr);
                 }
 
@@ -965,7 +968,7 @@ option:disabled:hover {
             if (!(this.dictCityOffices.has(elm.city))) {
 
                 let arr = [];
-                arr.push([elm.label_web, elm.office_id, elm.latitude, elm.longitude]);
+                arr.push([elm.label_web, elm.office_id, elm.latitude, elm.longitude, elm.address_web_1]);
                 this.dictCityOffices.set(elm.city, arr);
 //                if (elm.city == 'Владивосток') console.log("Владивосток", this.dictCityOffices.get('Владивосток'));
             } else {
@@ -978,7 +981,7 @@ option:disabled:hover {
                 });
 
                 if (!(arr1.includes(elm.office_id))) {
-                    arr.push([elm.label_web, elm.office_id, elm.latitude, elm.longitude]);
+                    arr.push([elm.label_web, elm.office_id, elm.latitude, elm.longitude, elm.address_web_1]);
                     this.dictCityOffices.set(elm.city, arr);
                 }
 
@@ -1037,7 +1040,7 @@ option:disabled:hover {
         console.log("Проверяем слушатель событий Города");
             let citiesDataLink = document.querySelectorAll(".db-datalist")[1];
             let arr = this.dictCityOffices.get(city);
-            let arr1 = Array.from(arr, x => [x[0], x[1]]);
+            let arr1 = Array.from(arr, x => [x[0], x[1], x[4]]);
             
             const exclud = (x) => {
                 let excludeOfficess = ["аэ", "авангард-экспресс", "экспресс"];
@@ -1060,8 +1063,10 @@ option:disabled:hover {
             }
             arr1.forEach((el, ind) => {
                 let option = document.createElement('option');
-                option.value = el[0] + " г. Москва, ул. Большая Якиманка, д. 1";
-                option.text = el[0] + " г. Москва, ул. Большая Якиманка, д. 1";;
+//                option.value = el[0] + " г. Москва, ул. Большая Якиманка, д. 1";
+//                option.text = el[0] + " г. Москва, ул. Большая Якиманка, д. 1";
+                option.value = el[0] + " " + el[2];
+                option.text = el[0] + " " + el[2];
                 option.dataset.officeid = el[1];
                 option.dataset.address = "No";
                 citiesDataLink.appendChild(option);
