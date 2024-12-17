@@ -1,6 +1,6 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
-require($_SERVER["DOCUMENT_ROOT"] . "/rus/close/api/api_course/cashlessRate.php");
+require(getcwd() . "/cashlessRate.php");
 $APPLICATION->SetTitle("Курсы валют");
 ?> 
 <style>
@@ -164,6 +164,11 @@ option:disabled:hover {
     flex-direction: row;
     width: 90% !important;
 }
+.title-ofice {
+    width: 90% !important;
+    color: #232323 !important;
+    font-weight: 600 !important;
+}
 .controller-item {
     display: flex;
     align-items: flex-start;
@@ -188,7 +193,7 @@ option:disabled:hover {
     font-size: 12px;
     height: 22px;
     width: 165px;
-    background: url('https://dev.avangard.ru/img/icons/bg-tab-map.png') no-repeat right top;
+    background: url('/img/icons/bg-tab-map.png') no-repeat right top;
     transform: translateY(45%);
 }
 .controller-item-last {
@@ -380,7 +385,8 @@ option:disabled:hover {
 <div class="rectangle_1">
         <h1 class="like-h1">Обмен валют</h1>
         <p> 
-            Банк Авангард гибко подходит к установке курсов иностранных валют. Обменные операции проводятся во всех офисах банка.
+            Банк Авангард гибко подходит к установке курсов иностранных валют. Валютно-обменные операции проводятся во всех офисах. 
+            Банк работает с купюрами только высокого качества.
         </p>
 </div>
 
@@ -394,7 +400,7 @@ option:disabled:hover {
             ?></p>
     <div class="controller-block">
         <div class="controller-item">
-            <p class="p-class">Город</p>
+            <p class="p-class">Регион</p>
             <div class="db-item">
                 <input class="db" autocomplete="off" role="combobox" list="" id="" name="city" placeholder="Выберите город" >
                 <datalist class="db-datalist" id="" role="listbox">
@@ -422,6 +428,9 @@ option:disabled:hover {
     </div>
     <div id="map-wrap" class="map-Yandex-Size">
         <div id="map" class="map-Yandex-Exact-Size"></div>
+    </div>
+    <div>
+        <p class="title-ofice" id="office-name"></p>
     </div>
     <div class='currency-list-block currency-nal'>
         <div class='currency-element first-currency-show first-currency-show-nal'>
@@ -489,7 +498,7 @@ option:disabled:hover {
                 <div class='currency-element first-currency-show'>
                     <div class="currency-element-block">
                         <?php $flagPath = $cashlessRateItem['icon']; ?>
-                            <img src="https://dev.avangard.ru/img/icons/flags/<?= $flagPath; ?>" alt="" srcset="">
+                            <img src="/img/icons/flags/<?= $flagPath; ?>" alt="" srcset="">
                             <span class="flag-name"><?= $cashlessRateItem['currency_to']; ?></span>
                     </div>
                     <div class="currency-element-block-name"><span class="flag-name"><?= $cashlessRateItem['label']; ?></span></div>
@@ -510,13 +519,16 @@ option:disabled:hover {
             this.allDictCityOffices = new Map();
             this.myCollection;
             this.requestToApiFirst(["55.741206", "37.614267"]);
-            this.ymapsInit();         
-            this.settingsOnClickCities();
-            this.settingsOnClickOffices();
-            this.converter = converter;
+            this.ymapsInit().then(() => {
+                this.settingsOnClickCities();
+                this.settingsOnClickOffices();
+                this.converter = converter;
+            });         
+            
     }
     
-    CurrensyData.prototype.ymapsInit = async function() {
+    CurrensyData.prototype.ymapsInit = function() {
+        return new Promise (async (resolve, reject) => {
         ymaps.ready(init);
         let self = this;
         
@@ -536,6 +548,7 @@ option:disabled:hover {
 //        await self.requestToApi(result.geoObjects.position);
    
         async function init() {
+            
             let userLock = await fetchUserLocation();
             await self.requestToApi(userLock);
             let dict = self.createAllDictioneryOffices();
@@ -582,7 +595,7 @@ option:disabled:hover {
         
                 const placemark = new ymaps.Placemark(coordinates, {
                     id: id,
-                    name: label
+                    name: label.replace("ДО ", '')
                 }, {
                     iconLayout: 'default#image',
                     iconImageHref: defaultPinImage,
@@ -614,7 +627,7 @@ option:disabled:hover {
                             ); // Возвращаем стандартное изображение
                         }
                     });
-                    document.querySelectorAll(".db")[1].value = label;
+                    document.querySelectorAll(".db")[1].value = label.replace("ДО ", '');
                 });
 //                placemark.properties.set('hintContent', label);
 //                placemark.properties.set('hintLayout', HintLayout);
@@ -628,6 +641,8 @@ option:disabled:hover {
             
 
             self.myMap.setBounds(self.myCollection.getBounds());
+//            console.log("Самый Ближайший офис = ", self.closestOfficeData);
+            self.myMap.setCenter([self.closestOfficeData.latitude, self.closestOfficeData.longitude]);
             self.myMap.setZoom(12);
             
                 
@@ -639,6 +654,8 @@ option:disabled:hover {
 
 
         }
+        resolve();
+        });
     }
     
     CurrensyData.prototype.ymapsNewDraw = async function(city) {
@@ -688,7 +705,7 @@ option:disabled:hover {
 
                 const placemark = new ymaps.Placemark(coordinates, {
                     id: id,
-                    name: label
+                    name: label.replace("ДО ", '')
                 }, {
                     iconLayout: 'default#image',
                     iconImageHref: defaultPinImage,
@@ -724,7 +741,7 @@ option:disabled:hover {
                             ); // Возвращаем стандартное изображение
                         }
                     });
-                    document.querySelectorAll(".db")[1].value = label;
+                    document.querySelectorAll(".db")[1].value = label.replace("ДО ", '');
                 });
 //                placemark.properties.set('hintContent', label);
 //                placemark.properties.set('hintLayout', HintLayout);
@@ -795,7 +812,7 @@ option:disabled:hover {
                 clone.classList.remove("first-currency-none");
                 clone.classList.add("first-currency-show");
                 clone.classList.add("first-currency-show-nal");
-                let pathToIcon = el.currency_from == "RUR" ? "https://dev.avangard.ru/img/icons/flags/" + flag[0].icon : "https://dev.avangard.ru/img/icons/cross-rate.svg";
+                let pathToIcon = el.currency_from == "RUR" ? "/img/icons/flags/" + flag[0].icon : "/img/icons/cross-rate.svg";
                 let labelCur = el.currency_from == "RUR" ? el.currency_to : el.currency_to + " / " + el.currency_from;
                 let labelname = el.currency_from == "RUR" ? flag[0].label : flag[0].label + " / доллар США";
                 clone.children[0].innerHTML = '<img class="flag-src" src="' + pathToIcon + '" alt="" srcset=""><span class="flag-name">' +  labelCur + '</span>';
@@ -855,10 +872,12 @@ option:disabled:hover {
                 this.closestOfficeData = closestOffice;
                 this.parseCurrencies(result);
                 this.changeCitiesOffices(closestOffice);
-                document.querySelectorAll(".db")[0].value = closestOffice.city;
+                document.querySelectorAll(".db")[0].value = closestOffice.city == "Москва" ? "Москва и Московская обл." : closestOffice.city;
                 document.querySelectorAll(".db")[1].value = closestOffice.label_web.replace("ДО ", '');
+                document.getElementById("office-name").innerHTML = closestOffice.label_web.replace("ДО ", '') + ", " + closestOffice.address_web_1;
                 this.createListnersCities(closestOffice.city, "map");
                 document.querySelectorAll(".db")[1].value = closestOffice.label_web.replace("ДО ", '');
+                document.getElementById("office-name").innerHTML = closestOffice.label_web.replace("ДО ", '') + ", " + closestOffice.address_web_1;
 //                this.changePinOnMap(closestOffice.id);
 //            }
 //            catch(error) {
@@ -902,10 +921,12 @@ option:disabled:hover {
                 this.closestOfficeData = closestOffice;
                 this.parseCurrencies(result);
                 this.changeCitiesOffices(closestOffice);
-                document.querySelectorAll(".db")[0].value = closestOffice.city;
+                document.querySelectorAll(".db")[0].value = closestOffice.city == "Москва" ? "Москва и Московская обл." : closestOffice.city;
                 document.querySelectorAll(".db")[1].value = closestOffice.label_web.replace("ДО ", '');
+                document.getElementById("office-name").innerHTML = closestOffice.label_web.replace("ДО ", '') + ", " + closestOffice.address_web_1;
                 this.createListnersCities(closestOffice.city, "map");
                 document.querySelectorAll(".db")[1].value = closestOffice.label_web.replace("ДО ", '');
+                document.getElementById("office-name").innerHTML = closestOffice.label_web.replace("ДО ", '') + ", " + closestOffice.address_web_1;
 //                this.changePinOnMap(closestOffice.id);
             }
             catch(error) {
@@ -1020,9 +1041,14 @@ option:disabled:hover {
                 });
             } else {
                 dataList.forEach((el, ind) => {
+//                    let data = el;
                     let option = document.createElement('option');
-                    option.value = el;
-                    option.text = el;
+                    let data = el == "Москва" ? "Москва и Московская обл." : el;
+//                    if (el == "Москва") { 
+//                        data = "Москва и Московская область";
+//                    }
+                    option.value = data;
+                    option.text = data;
                     citiesDataLink.appendChild(option);
                 });
             }
@@ -1062,8 +1088,10 @@ option:disabled:hover {
         }
         arr1.forEach((el, ind) => {
             let option = document.createElement('option');
-            let charts = "г. " + city + ",";
+            let charts = city + ",";
             let addr = el[2].replace(charts, '');
+            addr = addr.replace("г.", '');
+            addr = addr.replace(" г ", '');
             let nameL = el[0].replace("ДО ", '');
             option.value = nameL + " " + addr;
             option.text = nameL + " " + addr;
@@ -1093,9 +1121,10 @@ option:disabled:hover {
                 }
             });
             this.parseCurrencies(result);
+            document.getElementById("office-name").innerHTML = result[0].label_web.replace("ДО ", '') + ", " + result[0].address_web_1;
         }
-
-        this.ymapsNewDraw(city);
+        
+        if (from == "tab") {this.ymapsNewDraw(city);}
     }
         
     CurrensyData.prototype.createListnersOffice = function(office, officeID) {
@@ -1112,6 +1141,7 @@ option:disabled:hover {
             this.myMap.setCenter(newCenter);
             this.myMap.setZoom(12);
             this.parseCurrencies(result);
+            document.getElementById("office-name").innerHTML = result[0].label_web.replace("ДО ", '') + ", " + result[0].address_web_1;
     }
     
     CurrensyData.prototype.changePinOnMap = function(officeID) {
@@ -1177,9 +1207,9 @@ option:disabled:hover {
         }
         
         fieldLink.oninput = function(e) {
-            if (e.key === "ArrowDown") {
-                console.log("Нажалась кнопка вниз!!!");
-            }
+//            if (e.key === "ArrowDown") {
+//                console.log("Нажалась кнопка вниз!!!");
+//            }
             
             let currentFocus = -1;
             let text = fieldLink.value.toUpperCase();
@@ -1216,6 +1246,7 @@ option:disabled:hover {
         console.log("Проверяем новую клики городов");
 
         fieldLink.onfocus = function () {
+                fieldLink.select();
                 dataLink.style.display = 'block';
                 fieldLink.style.borderRadius = "6px 6px 0 0";  
         };
@@ -1229,10 +1260,11 @@ option:disabled:hover {
         let dataAllLinks = [];
         for (let option of dataLink.options) {
             option.onclick = function () {
+                let cityName = option.value == "Москва и Московская обл." ? "Москва" : option.value;
                 fieldLink.value = option.value;
                 dataLink.style.display = 'none';
                 fieldLink.style.borderRadius = "6px";
-                self.createListnersCities(option.value, "tab");
+                self.createListnersCities(cityName, "tab");
                 fieldLink.blur();
                 for (let option of dataLink.options) {
                     option.style.display = "block";
@@ -1504,8 +1536,4 @@ option:disabled:hover {
 </script>
 <script type="text/javascript">
 </script>
-<?require_once(getcwd() . "/jsmodule.php")?>
-
-
-    
 <?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>
