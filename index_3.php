@@ -625,9 +625,11 @@ option:disabled:hover {
                         highlightedPinImage); // Устанавливаем выделенный пин
                     placemark.options.set('iconImageSize', [37, 43]);
                     
-                    if (officeName.includes("Охотный")) {
+                    if (officeId == "274" || officeId == "786") {
                         console.log("Внтри кластера!");
                         self.myClusterer.options.set('preset', 'islands#invertedPinkClusterIcons');
+                    } else {
+                        self.myClusterer.options.set('preset', 'default#image');
                     }
 
                     // Можно добавить логику, чтобы другие пины возвращались к стандартному состоянию
@@ -642,7 +644,7 @@ option:disabled:hover {
                 });
 //                placemark.properties.set('hintContent', label);
 //                placemark.properties.set('hintLayout', HintLayout);
-                if (!(label.includes("Охотный"))) {
+                if (id != 274 && id != 786) {
                     self.myCollection.add(placemark);
                 } else {
 //                    self.myCollection.add(placemark);
@@ -768,6 +770,13 @@ option:disabled:hover {
                     // Изменение иконки пина на выделенную
                     placemark.options.set('iconImageHref', highlightedPinImage);
                     placemark.options.set('iconImageSize', [37, 43]);
+                    
+                    if (officeId == 274 || officeId == 786) {
+                        console.log("Внтри кластера!");
+                        self.myClusterer.options.set('preset', 'islands#invertedPinkClusterIcons');
+                    } else {
+                        self.myClusterer.options.set('preset', 'default#image');
+                    }
 
                     // Можно добавить логику, чтобы другие пины возвращались к стандартному состоянию
                     self.myCollection.each(function(existingPlacemark) {
@@ -781,7 +790,15 @@ option:disabled:hover {
                 });
 //                placemark.properties.set('hintContent', label);
 //                placemark.properties.set('hintLayout', HintLayout);
-                self.myCollection.add(placemark);
+
+                if ((id != 274 && id != 786)) {
+                    self.myCollection.add(placemark);
+                } else {
+//                    self.myCollection.add(placemark);
+                    console.log("Добавили кластер");
+                    self.myClusterer.add(placemark);
+                }
+//                self.myCollection.add(placemark);
             }
             });
             
