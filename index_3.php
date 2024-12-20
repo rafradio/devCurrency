@@ -624,6 +624,11 @@ option:disabled:hover {
                     placemark.options.set('iconImageHref',
                         highlightedPinImage); // Устанавливаем выделенный пин
                     placemark.options.set('iconImageSize', [37, 43]);
+                    
+                    if (officeName.includes("Охотный")) {
+                        console.log("Внтри кластера!");
+                        self.myClusterer.options.set('preset', 'islands#invertedPinkClusterIcons');
+                    }
 
                     // Можно добавить логику, чтобы другие пины возвращались к стандартному состоянию
                     self.myCollection.each(function(existingPlacemark) {
@@ -640,7 +645,7 @@ option:disabled:hover {
                 if (!(label.includes("Охотный"))) {
                     self.myCollection.add(placemark);
                 } else {
-                    self.myCollection.add(placemark);
+//                    self.myCollection.add(placemark);
                     console.log("Добавили кластер");
                     self.myClusterer.add(placemark);
                 }
@@ -1192,7 +1197,14 @@ option:disabled:hover {
                         newCenter = this.myCollection.get(i).geometry.getCoordinates();
                         console.log(this.myCollection.get(i).geometry.getCoordinates());
                     } else {
+//                        console.log("проверка myClusterer = ", this.myCollection.getClusters());
                         this.myCollection.get(i).options.set('iconImageHref', defaultPinImage);
+                        if (this.myClusterer) {
+                            this.myClusterer.getGeoObjects().forEach((elm, ind) => {
+                                elm.options.set('iconImageHref', defaultPinImage);
+                            });
+
+                        }
                     }
     //                  console.log("меняем пин на активный", geoObject.options.get('iconImageHref'));
                 }
@@ -1205,7 +1217,8 @@ option:disabled:hover {
                     newCenter = elm.geometry.getCoordinates();
                 }
             });
-            console.log("проверка myClusterer = ", this.myClusterer.getGeoObjects()[0].properties.get('id'));
+//            console.log("проверка myClusterer = ", this.myClusterer.getGeoObjects()[0].properties.get('id'));
+            console.log("проверка myClusterer = ", this.myClusterer.getClusters());
         }
         
         return newCenter;
