@@ -385,8 +385,9 @@ option:disabled:hover {
 <div class="rectangle_1">
         <h1 class="like-h1">Обмен валют</h1>
         <p> 
-            Банк Авангард гибко подходит к установке курсов иностранных валют. Валютно-обменные операции проводятся во всех офисах. 
-            Банк работает с купюрами только высокого качества.
+            Валютно-обменные операции проводятся во всех офисах банка, при этом в некоторых из них можно обменять до 41 вида валют.<br><br> 
+            Котировки зависят от текущей ситуации на рынке и могут меняться в течение дня. Рекомендуем уточнять курс покупки/продажи валюты в офисе непосредственно перед проведением операции.<br><br>
+            Покупая валюту в офисах Авангарда, вы можете быть уверены в ее высоком качестве.
         </p>
 </div>
 
@@ -518,6 +519,7 @@ option:disabled:hover {
             this.dictCityOffices = new Map();
             this.allDictCityOffices = new Map();
             this.myCollection;
+            this.myClusterer;
             this.requestToApiFirst(["55.741206", "37.614267"]);
             this.ymapsInit().then(() => {
                 this.settingsOnClickCities();
@@ -565,6 +567,10 @@ option:disabled:hover {
             const highlightedPinImage = '/img/icons/orangePin.svg'; // Выделенное изображение
                 
             self.myCollection = new ymaps.GeoObjectCollection();
+            self.myClusterer = new ymaps.Clusterer(
+                {clusterDisableClickZoom: false}
+            );
+            
             cityOffices.forEach(item => {
                 let [label, id, latitude, longitude] = item;
                 const coordinates = [latitude, longitude];
@@ -631,11 +637,19 @@ option:disabled:hover {
                 });
 //                placemark.properties.set('hintContent', label);
 //                placemark.properties.set('hintLayout', HintLayout);
-                self.myCollection.add(placemark);
+                if (!(label.includes("Охотный"))) {
+                    self.myCollection.add(placemark);
+                } else {
+                    self.myCollection.add(placemark);
+                    console.log("Добавили кластер");
+                    self.myClusterer.add(placemark);
+                }
+                //self.myCollection.add(placemark);
 
             });
 
             self.myMap.geoObjects.add(self.myCollection);
+            self.myMap.geoObjects.add(self.myClusterer);
             console.log("Координаты коллекции яндекса длина = ", self.myCollection.getLength());
             
             
@@ -675,7 +689,24 @@ option:disabled:hover {
         const defaultPinImage = '/img/marker.png'; // Стандартное изображение
         const highlightedPinImage = '/img/icons/orangePin.svg'; // Выделенное изображение
         
+        
+        
+        let arrIdFromCity = Array();
+        
+        if (self.myCollection) {
+            for (var i = 0; i < self.myCollection.getLength(); i++) {
+                arrIdFromCity.push(self.myCollection.get(i).properties.get('id'));
+            }
+        }
+        
+        if (self.myClusterer) {
+            self.myClusterer.getGeoObjects().forEach((elm, ind) => {
+                arrIdFromCity.push(elm.properties.get('id'));
+            });
+        }
+        
         cityOffices.forEach(item => {
+            if (!(arrIdFromCity.includes(item[1]))) {
                 let [label, id, latitude, longitude] = item;
                 const coordinates = [latitude, longitude];
 
@@ -746,7 +777,7 @@ option:disabled:hover {
 //                placemark.properties.set('hintContent', label);
 //                placemark.properties.set('hintLayout', HintLayout);
                 self.myCollection.add(placemark);
-
+            }
             });
             
         self.myMap.geoObjects.add(self.myCollection);
@@ -1138,6 +1169,7 @@ option:disabled:hover {
             let result = this.dataFromApi.filter(x => x.office_id == officeID);
             
             let newCenter = this.changePinOnMap(officeID);
+            console.log("Новый центр newCenter = ", newCenter);
             this.myMap.setCenter(newCenter);
             this.myMap.setZoom(12);
             this.parseCurrencies(result);
@@ -1165,6 +1197,15 @@ option:disabled:hover {
     //                  console.log("меняем пин на активный", geoObject.options.get('iconImageHref'));
                 }
             }
+        }
+        
+        if (this.myClusterer) {
+            this.myClusterer.getGeoObjects().forEach((elm, ind) => {
+                if (elm.properties.get('id') == officeID) {
+                    newCenter = elm.geometry.getCoordinates();
+                }
+            });
+            console.log("проверка myClusterer = ", this.myClusterer.getGeoObjects()[0].properties.get('id'));
         }
         
         return newCenter;
