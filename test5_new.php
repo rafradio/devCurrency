@@ -148,7 +148,7 @@ option {
     width: 355px;
 }*/
 
-option:hover,  .active{
+option:hover {
     background-color: lightblue;
 }
 
@@ -381,7 +381,7 @@ option:disabled:hover {
 }
 
 </style>
-<script src="https://api-maps.yandex.ru/2.1/?apikey=a0a0b5ec-c142-4ea8-b8e6-ae69a5859bef&lang=ru_RU"></script>
+<script src="https://api-maps.yandex.ru/2.1/?apikey=b593496b-67b8-455e-931b-a42abf057efa&lang=ru_RU"></script>
 <div class="rectangle_1">
         <h1 class="like-h1">Обмен валют</h1>
         <p> 
@@ -530,7 +530,11 @@ option:disabled:hover {
     
     CurrensyData.prototype.ymapsInit = function() {
         return new Promise (async (resolve, reject) => {
-        ymaps.ready(init);
+        if (typeof ymaps !== "undefined") {
+            ymaps.ready(init);
+        } else {
+            resolve();
+        }
         let self = this;
         
         const fetchUserLocation = async () => {
@@ -551,11 +555,12 @@ option:disabled:hover {
         async function init() {
             
             let userLock = await fetchUserLocation();
-            await self.requestToApi(userLock);
+            let userLockCheck = (userLock) ? userLock : ["43.115542", "131.885494"];
+            await self.requestToApi(userLockCheck);
             let dict = self.createAllDictioneryOffices();
             console.log("Собираем коллекцию пинов все = ", dict, self.closestOfficeData);
             self.myMap = new ymaps.Map("map", { 
-                                    center: userLock, 
+                                    center: userLockCheck, 
                                     zoom: 12,
                                     controls: ['zoomControl']
                     });
@@ -661,6 +666,9 @@ option:disabled:hover {
     
     CurrensyData.prototype.ymapsNewDraw = async function(city) {
         let self = this;
+        if (typeof ymaps !== "undefined") {
+            
+        
         
         const fetchUserLocation = async () => {
             const res = await ymaps.geocode(city);
@@ -670,7 +678,7 @@ option:disabled:hover {
         
         let data = await fetchUserLocation();
         console.log("Геолокация города = ", data);
-        
+        data = (data) ? data : ["55.741206", "37.614267"];
         
         let cityOffices = this.allDictCityOffices.get(city);
         const defaultPinImage = '/img/marker.png'; // Стандартное изображение
@@ -755,6 +763,7 @@ option:disabled:hover {
         this.myMap.setCenter(data);
         this.myMap.setZoom(12);
         self.changePinOnMap(self.closestOfficeData.office_id);
+      }
     }
     
     CurrensyData.prototype.parseCurrencies = function(result) {
@@ -1139,8 +1148,9 @@ option:disabled:hover {
             let result = this.dataFromApi.filter(x => x.office_id == officeID);
             
             let newCenter = this.changePinOnMap(officeID);
-            this.myMap.setCenter(newCenter);
-            this.myMap.setZoom(12);
+            newCenter = (newCenter) ? newCenter : [result[0].latitude, result[0].longitude];
+            if (this.myMap) this.myMap.setCenter(newCenter);
+            if (this.myMap) this.myMap.setZoom(12);
             this.parseCurrencies(result);
             document.getElementById("office-name").innerHTML = result[0].label_web.replace("ДО ", '') + ", " + result[0].address_web_1;
     }
