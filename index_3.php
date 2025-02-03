@@ -98,7 +98,7 @@ $APPLICATION->SetTitle("Курсы валют");
     box-shadow: inset 0px 2px 3px 0px rgba(0, 0, 0, 0.38);
     font-size: 12px;
     padding: 5px;
-    height: 15px;
+/*    height: 15px;*/
     width: 165px;
 /*    border: 1px solid rgb(90, 90, 90);*/
     outline: none;
@@ -148,7 +148,7 @@ option {
     width: 355px;
 }*/
 
-option:hover,  .active{
+option:hover {
     background-color: lightblue;
 }
 
@@ -402,7 +402,7 @@ option:disabled:hover {
     <div class="controller-block">
         <div class="controller-item">
             <p class="p-class">Регион</p>
-            <div class="db-item">
+            <div id="cities-regions" class="db-item">
                 <input class="db" autocomplete="off" role="combobox" list="" id="" name="city" placeholder="Выберите город" >
                 <datalist class="db-datalist" id="" role="listbox">
                     <option value="Москва">Москва</option>
@@ -412,7 +412,7 @@ option:disabled:hover {
         </div>
         <div class="controller-item">
             <p class="p-class">Офис</p>
-            <div class="db-item">
+            <div id="offices-bank" class="db-item">
                 <input class="db" autocomplete="off" role="combobox" list="" id="" name="city" placeholder="Выберите офис" >
                 <datalist class="db-datalist" id="" role="listbox">
                     <option value="Полянка">Полянка</option>
@@ -513,6 +513,8 @@ option:disabled:hover {
 <script type="text/javascript" defer>
     
     function CurrensyData(converter) {
+            this.flagForScreens = "desctop";
+            this.settingsForScreens();
             this.dataFromApi = [];
             this.flagsFromApi = [];
             this.closestOfficeData = [];
@@ -529,6 +531,33 @@ option:disabled:hover {
             
     }
     
+    CurrensyData.prototype.settingsForScreens = function() {
+        if (window.screen.width <= 1084) {
+            this.flagForScreens = "mobile";
+            let htmlObjectArray = [document.getElementById("cities-regions"), document.getElementById("offices-bank")];
+            htmlObjectArray.forEach((htmlObject, ind) => {
+                Array.from(htmlObject.children).forEach((elm, index) => {
+                    if (index == 0) {
+                        elm.remove();
+                        let newSelect = document.createElement('select');
+                        newSelect.setAttribute("class", "db");
+                        // newSelect.setAttribute("name", "city");
+                        //newSelect.setAttribute("style", "border-radius: 6px;");
+                        let opt = document.createElement('option');
+                        opt.value = "Выберите офис";
+                        opt.text = "Выберите офис";
+                        newSelect.appendChild(opt);
+                        htmlObject.appendChild(newSelect);
+                    } else {
+                        elm.remove();
+                    }
+                });
+            });
+            
+            // console.log("Мы в мобильном экране = ", htmlObject.children.length);
+        }
+    }
+    
     CurrensyData.prototype.ymapsInit = function() {
         return new Promise (async (resolve, reject) => {
         ymaps.ready(init);
@@ -538,11 +567,12 @@ option:disabled:hover {
             const geolocation = ymaps.geolocation;
 
             const result = await geolocation.get({
-                provider: 'yandex',
-                mapStateAutoApply: false,
-            })
-
-            userCoordinates = result.geoObjects.position;
+                provider: 'auto'
+            });
+            
+            console.log("Уточнение работы геолокации Яндекса = ", result.geoObjects.get(0).geometry.getCoordinates());
+            userCoordinates = result.geoObjects.get(0).geometry.getCoordinates();
+            console.log("Уточнение работы геолокации Яндекса = ", result.geoObjects.position);
             return userCoordinates;
         }
         
@@ -930,6 +960,7 @@ option:disabled:hover {
                 document.getElementById("office-name").innerHTML = closestOffice.label_web.replace("ДО ", '') + ", " + closestOffice.address_web_1;
                 this.createListnersCities(closestOffice.city, "map");
                 document.querySelectorAll(".db")[1].value = closestOffice.label_web.replace("ДО ", '');
+                console.log("Должен установиться офис = ", document.querySelectorAll(".db")[1]);
                 document.getElementById("office-name").innerHTML = closestOffice.label_web.replace("ДО ", '') + ", " + closestOffice.address_web_1;
 //                this.changePinOnMap(closestOffice.id);
 //            }
@@ -1071,7 +1102,8 @@ option:disabled:hover {
 
         const change = (id, dataList) => {
             let citiesFieldLink = document.querySelectorAll(".db")[id];
-            let citiesDataLink = document.querySelectorAll(".db-datalist")[id];
+            // let citiesDataLink = document.querySelectorAll(".db-datalist")[id];
+            let citiesDataLink = this.flagForScreens == "desctop" ? document.querySelectorAll(".db-datalist")[id] : citiesFieldLink;
 
             let options = citiesDataLink.children;
             var i, L = options.length - 1;
@@ -1116,7 +1148,9 @@ option:disabled:hover {
         
     CurrensyData.prototype.createListnersCities = function(city, from) {
         console.log("Проверяем слушатель событий Города");
-        let citiesDataLink = document.querySelectorAll(".db-datalist")[1];
+        let fieldLinkMobile = document.querySelectorAll(".db")[1];
+        //let citiesDataLink = document.querySelectorAll(".db-datalist")[1];
+        let citiesDataLink = this.flagForScreens == "desctop" ? document.querySelectorAll(".db-datalist")[1] : fieldLinkMobile;
         let arr = this.dictCityOffices.get(city);
         let arr1 = Array.from(arr, x => [x[0], x[1], x[4]]);
 
@@ -1191,9 +1225,12 @@ option:disabled:hover {
             let result = this.dataFromApi.filter(x => x.office_id == officeID);
             
             let newCenter = this.changePinOnMap(officeID);
-            console.log("Новый центр newCenter = ", newCenter);
-            this.myMap.setCenter(newCenter);
-            this.myMap.setZoom(12);
+//            console.log("Новый центр newCenter = ", newCenter);
+//            this.myMap.setCenter(newCenter);
+//            this.myMap.setZoom(12);
+            newCenter = (newCenter) ? newCenter : [result[0].latitude, result[0].longitude];
+            if (this.myMap) this.myMap.setCenter(newCenter);
+            if (this.myMap) this.myMap.setZoom(12);
             this.parseCurrencies(result);
             document.getElementById("office-name").innerHTML = result[0].label_web.replace("ДО ", '') + ", " + result[0].address_web_1;
     }
@@ -1244,13 +1281,14 @@ option:disabled:hover {
     CurrensyData.prototype.settingsOnClickOffices = function() {
 //        console.log("Проверяем новую клики офисов");
         let fieldLink = document.querySelectorAll(".db")[1];
-        let dataLink = document.querySelectorAll(".db-datalist")[1];
+        // let dataLink = document.querySelectorAll(".db-datalist")[1];
+        let dataLink = this.flagForScreens == "desctop" ? document.querySelectorAll(".db-datalist")[1] : fieldLink;
         let self = this;
 
         fieldLink.onfocus = function () {
-                dataLink.style.display = 'block';
+                if (self.flagForScreens == "desctop") dataLink.style.display = 'block';
                 fieldLink.style.borderRadius = "6px 6px 0 0";  
-                fieldLink.select();
+                if (self.flagForScreens == "desctop") fieldLink.select();
         };
 
         for (let option of dataLink.options) {
@@ -1263,19 +1301,29 @@ option:disabled:hover {
 //            console.log("Проверяем новую клики офисов = ", option);
             if (option.dataset.address != "Address") {
                 option.onclick = function () {
-//                console.log("Проверяем новую клики офисов = ", option.value);
+                console.log("Проверяем новую клики офисов = ", option.value);
                     fieldLink.value = option.value;
-                    dataLink.style.display = 'none';
+                    if (self.flagForScreens == "desctop") dataLink.style.display = 'none';
                     fieldLink.style.borderRadius = "6px";
                     self.createListnersOffice(option.value, option.dataset.officeid);
                     fieldLink.blur();
                     for (let option of dataLink.options) {
-                        option.style.display = "block";
+                        if (self.flagForScreens == "desctop") option.style.display = "block";
                     };
                 }
             }
             
         }
+        
+        if (self.flagForScreens != "desctop") {
+            fieldLink.onchange = function(e) {
+                console.log("Нажался Селект 2 = ", e.target.selectedOptions[0].dataset.officeid);
+                fieldLink.style.borderRadius = "6px";
+                self.createListnersOffice(fieldLink.value, e.target.selectedOptions[0].dataset.officeid);
+                fieldLink.blur();
+            }
+        }
+        
         
         fieldLink.oninput = function(e) {
 //            if (e.key === "ArrowDown") {
@@ -1286,18 +1334,18 @@ option:disabled:hover {
             let text = fieldLink.value.toUpperCase();
             for (let option of dataLink.options) {
                 if(option.value.toUpperCase().indexOf(text) > -1) {
-                    option.style.display = "block";
+                    if (self.flagForScreens == "desctop") option.style.display = "block";
                 } else {
-                    option.style.display = "none";
+                    if (self.flagForScreens == "desctop") option.style.display = "none";
                 }
             };
          }
 
         fieldLink.onblur = function (event) {
-            dataLink.style.display = 'none';
+            if (self.flagForScreens == "desctop") dataLink.style.display = 'none';
             fieldLink.style.borderRadius = "6px 6px 6px 6px";  
             for (let option of dataLink.options) {
-                option.style.display = "block";
+                if (self.flagForScreens == "desctop") option.style.display = "block";
             };
         }
         
@@ -1312,13 +1360,13 @@ option:disabled:hover {
         
     CurrensyData.prototype.settingsOnClickCities = function() {
         let fieldLink = document.querySelectorAll(".db")[0];
-        let dataLink = document.querySelectorAll(".db-datalist")[0];
+        let dataLink = this.flagForScreens == "desctop" ? document.querySelectorAll(".db-datalist")[0] : fieldLink;
         let self = this;
         console.log("Проверяем новую клики городов");
 
         fieldLink.onfocus = function () {
-                fieldLink.select();
-                dataLink.style.display = 'block';
+                if (self.flagForScreens == "desctop") fieldLink.select();
+                if (self.flagForScreens == "desctop") dataLink.style.display = 'block';
                 fieldLink.style.borderRadius = "6px 6px 0 0";  
         };
 
@@ -1333,13 +1381,25 @@ option:disabled:hover {
             option.onclick = function () {
                 let cityName = option.value == "Москва и Московская обл." ? "Москва" : option.value;
                 fieldLink.value = option.value;
-                dataLink.style.display = 'none';
+                if (self.flagForScreens == "desctop") dataLink.style.display = 'none';
                 fieldLink.style.borderRadius = "6px";
                 self.createListnersCities(cityName, "tab");
                 fieldLink.blur();
                 for (let option of dataLink.options) {
-                    option.style.display = "block";
+                    if (self.flagForScreens == "desctop") option.style.display = "block";
                 };
+            }
+        }
+        
+        if (self.flagForScreens != "desctop") {
+            fieldLink.onchange = function() {
+                console.log("Нажался Селект");
+                let cityName = fieldLink.value == "Москва и Московская обл." ? "Москва" : fieldLink.value;
+                //fieldLink.value = option.value;
+                if (self.flagForScreens == "desctop") dataLink.style.display = 'none';
+                fieldLink.style.borderRadius = "6px";
+                self.createListnersCities(cityName, "tab");
+                fieldLink.blur();
             }
         }
 
@@ -1348,18 +1408,18 @@ option:disabled:hover {
                 let text = fieldLink.value.toUpperCase();
                 for (let option of dataLink.options) {
                     if(option.value.toUpperCase().indexOf(text) > -1) {
-                        option.style.display = "block";
+                        if (self.flagForScreens == "desctop") option.style.display = "block";
                     } else {
-                        option.style.display = "none";
+                        if (self.flagForScreens == "desctop") option.style.display = "none";
                     }
                 };
             }
 
             fieldLink.onblur = function (event) {
-                dataLink.style.display = 'none';
+                if (self.flagForScreens == "desctop") dataLink.style.display = 'none';
                 fieldLink.style.borderRadius = "6px 6px 6px 6px";  
                 for (let option of dataLink.options) {
-                    option.style.display = "block";
+                    if (self.flagForScreens == "desctop") option.style.display = "block";
                 };
             };
     }
